@@ -28,10 +28,6 @@ export type OnboardingScreenProps = {
   navigation: NativeStackNavigationProp<StackParamList, 'Onboarding'>;
 };
 
-export type WelcomeScreenProps = {
-  navigation: NativeStackNavigationProp<StackParamList, 'Welcome'>;
-};
-
 export type ForgotPasswordScreenProps = {
   navigation: NativeStackNavigationProp<StackParamList, 'ForgotPassword'>;
 };

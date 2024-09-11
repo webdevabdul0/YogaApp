@@ -2,7 +2,6 @@ import React from 'react';
 import {NavigationContainer} from '@react-navigation/native';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
 import LoginScreen from './screens/authenticationScreens/LoginScreen';
-import Welcome from './screens/authenticationScreens/Welcome';
 import SignupScreen from './screens/authenticationScreens/SignupScreen';
 import Otp from './screens/authenticationScreens/Otp';
 import Onboarding from './screens/authenticationScreens/Onboarding';
@@ -18,7 +17,6 @@ function App(): React.JSX.Element {
         screenOptions={{
           headerShown: false,
         }}>
-        <Stack.Screen name="Welcome" component={Welcome} />
         <Stack.Screen name="Onboarding" component={Onboarding} />
         <Stack.Screen name="Login" component={LoginScreen} />
         <Stack.Screen name="Signup" component={SignupScreen} />
