@@ -1,7 +1,4 @@
-import {NativeStackNavigationProp} from '@react-navigation/native-stack';
-import {StackParamList} from '../../navigation/StackParamList'; // Define your StackParamList
-
-import React from 'react';
+import React, {useState} from 'react';
 import {
   View,
   Text,
@@ -14,22 +11,74 @@ import {
   SafeAreaView,
   TouchableWithoutFeedback,
   Keyboard,
+  Alert,
 } from 'react-native';
+import auth from '@react-native-firebase/auth';
+import {NativeStackNavigationProp} from '@react-navigation/native-stack';
+import {StackParamList} from '../../navigation/StackParamList';
 
 type LoginScreenProps = {
   navigation: NativeStackNavigationProp<StackParamList, 'Login'>;
 };
 
+const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
 const yogaBackground = require('../../assets/Onboarding.png');
 
 const LoginScreen: React.FC<LoginScreenProps> = ({navigation}) => {
+  const [email, setEmail] = useState<string>('');
+  const [password, setPassword] = useState<string>('');
+  const [loading, setLoading] = useState<boolean>(false);
+
+  const validateInput = (): boolean => {
+    if (!email || !password) {
+      Alert.alert('Error', 'Please fill in both email and password.');
+      return false;
+    }
+
+    if (!emailRegex.test(email)) {
+      Alert.alert('Error', 'Please enter a valid email address.');
+      return false;
+    }
+
+    if (password.length < 6) {
+      Alert.alert('Error', 'Password should be at least 6 characters.');
+      return false;
+    }
+
+    return true;
+  };
+
+  const handleLogin = async () => {
+    if (!validateInput()) {
+      return;
+    }
+
+    try {
+      setLoading(true);
+      await auth().signInWithEmailAndPassword(email, password);
+      navigation.replace('Main');
+    } catch (error: any) {
+      if (error.code === 'auth/invalid-email') {
+        Alert.alert('Error', 'That email address is invalid.');
+      } else if (error.code === 'auth/user-not-found') {
+        Alert.alert('Error', 'No user found for that email.');
+      } else if (error.code === 'auth/wrong-password') {
+        Alert.alert('Error', 'Incorrect password.');
+      } else {
+        Alert.alert('Error', 'Something went wrong. Please try again.');
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <KeyboardAvoidingView
       style={{flex: 1}}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       keyboardVerticalOffset={Platform.OS === 'ios' ? 60 : 0}>
       <SafeAreaView className="flex-1 bg-white">
-        {/* Dismiss keyboard when tapping outside */}
         <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
           <ScrollView contentContainerStyle={{flexGrow: 1}}>
             <ImageBackground
@@ -53,16 +102,17 @@ const LoginScreen: React.FC<LoginScreenProps> = ({navigation}) => {
                 className="bg-gray-100 p-4 rounded-3xl my-2 text-base"
                 placeholder="Email Address"
                 keyboardType="email-address"
+                value={email}
+                onChangeText={text => setEmail(text)}
               />
 
-              <View className="justify-between">
-                <TextInput
-                  className="bg-gray-100 p-4 rounded-3xl my-2 text-base"
-                  placeholder="Password"
-                  secureTextEntry={true}
-                />
-                {/* Add icon for eye */}
-              </View>
+              <TextInput
+                className="bg-gray-100 p-4 rounded-3xl my-2 text-base"
+                placeholder="Password"
+                secureTextEntry={true}
+                value={password}
+                onChangeText={text => setPassword(text)}
+              />
 
               <TouchableOpacity
                 onPress={() => navigation.navigate('ForgotPassword')}>
@@ -73,8 +123,11 @@ const LoginScreen: React.FC<LoginScreenProps> = ({navigation}) => {
 
               <TouchableOpacity
                 className="bg-red-500 py-4 w-full rounded-3xl mt-5 items-center"
-                onPress={() => navigation.replace('Main')}>
-                <Text className="text-white text-sm font-bold">Login</Text>
+                onPress={handleLogin}
+                disabled={loading}>
+                <Text className="text-white text-sm font-bold">
+                  {loading ? 'Logging in...' : 'Login'}
+                </Text>
               </TouchableOpacity>
 
               <View className="flex-row justify-center mt-5">

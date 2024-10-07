@@ -6,17 +6,42 @@ import {
   TouchableOpacity,
   KeyboardAvoidingView,
   StyleSheet,
+  Alert,
 } from 'react-native';
-import {OtpScreenProps} from '../../navigation/StackParamList';
+import auth from '@react-native-firebase/auth'; // Firebase auth import
+import {OtpScreenProps} from '../../navigation/StackParamList'; // Ensure this is correctly defined
 
-const Otp: React.FC<OtpScreenProps> = ({navigation}) => {
-  const [otp, setOtp] = useState(['', '', '', '']); // 4-digit OTP
+const Otp: React.FC<OtpScreenProps> = ({route, navigation}) => {
+  const {email, otpCode} = route.params; // Receiving email and OTP from navigation params
+  const [enteredOtp, setEnteredOtp] = useState(['', '', '', '', '', '']); // 6-digit OTP
 
-  // Function to handle OTP input change
+  // Function to handle input changes for OTP
   const handleInputChange = (value: string, index: number) => {
-    const newOtp = [...otp];
-    newOtp[index] = value;
-    setOtp(newOtp);
+    const newOtp = [...enteredOtp]; // Create a copy of the current OTP array
+    newOtp[index] = value; // Update the digit at the specific index
+    setEnteredOtp(newOtp); // Update the state with the new OTP
+  };
+
+  const handleOtpVerification = () => {
+    const userEnteredOtp = enteredOtp.join(''); // Join entered digits to form the OTP string
+
+    if (userEnteredOtp === otpCode) {
+      // Mark user as verified in Firebase
+      const user = auth().currentUser;
+      if (user) {
+        user
+          .sendEmailVerification()
+          .then(() => {
+            Alert.alert('Success', 'Email verified!');
+            navigation.navigate('Main'); // Navigate to the main screen of your app
+          })
+          .catch(error => {
+            console.error('Email verification error:', error);
+          });
+      }
+    } else {
+      Alert.alert('Error', 'Invalid OTP. Please try again.');
+    }
   };
 
   return (
@@ -31,11 +56,11 @@ const Otp: React.FC<OtpScreenProps> = ({navigation}) => {
       <View style={styles.formContainer}>
         <Text style={styles.title}>Enter OTP</Text>
         <Text style={styles.subtitle}>
-          Enter a verification code we just sent to your email address
+          Enter the 6-digit code we just sent to your email
         </Text>
 
         <View style={styles.otpContainer}>
-          {otp.map((digit, index) => (
+          {enteredOtp.map((digit, index) => (
             <TextInput
               key={index}
               style={styles.otpInput}
@@ -47,14 +72,8 @@ const Otp: React.FC<OtpScreenProps> = ({navigation}) => {
           ))}
         </View>
 
-        <TouchableOpacity onPress={() => console.log('Resend OTP')}>
-          <Text style={styles.resendText}>Resend code</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={styles.button}
-          onPress={() => navigation.navigate('Main')}>
-          <Text style={styles.buttonText}>Continue</Text>
+        <TouchableOpacity onPress={handleOtpVerification}>
+          <Text style={styles.buttonText}>Verify & Continue</Text>
         </TouchableOpacity>
       </View>
     </KeyboardAvoidingView>

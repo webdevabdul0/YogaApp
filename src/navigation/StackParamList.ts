@@ -1,27 +1,29 @@
-// navigation/types.ts
+import {RouteProp} from '@react-navigation/native';
 import {NativeStackNavigationProp} from '@react-navigation/native-stack';
 
+// Define types for your stack parameter list
 export type StackParamList = {
   Welcome: undefined;
   Onboarding: undefined;
   Login: undefined;
   Signup: undefined;
-  Otp: undefined;
+  Otp: {email: string; otpCode: string};
   ForgotPassword: undefined;
   Main: undefined; // The Main screen corresponds to your TabNavigator
 };
 
-// Define types for each screen's navigation prop
+// Define types for each screen's navigation and route props
+export type OtpScreenProps = {
+  navigation: NativeStackNavigationProp<StackParamList, 'Otp'>;
+  route: RouteProp<StackParamList, 'Otp'>;
+};
+
 export type LoginScreenProps = {
   navigation: NativeStackNavigationProp<StackParamList, 'Login'>;
 };
 
 export type SignupScreenProps = {
   navigation: NativeStackNavigationProp<StackParamList, 'Signup'>;
-};
-
-export type OtpScreenProps = {
-  navigation: NativeStackNavigationProp<StackParamList, 'Otp'>;
 };
 
 export type OnboardingScreenProps = {
