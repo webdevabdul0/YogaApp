@@ -1,0 +1,13 @@
+[build]
+  # Path to your serverless functions
+  functions = "functions"
+
+[dev]
+  # Skip framework auto-detection by using a custom command
+  framework = "#custom"
+
+  # Use the correct path to the server file
+  command = "node functions/send-otp.js"
+
+  # Set the target port where your server runs (optional)
+  targetPort = 3000

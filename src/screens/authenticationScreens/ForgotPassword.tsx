@@ -41,12 +41,12 @@ const ForgotPassword: React.FC<ForgotPasswordScreenProps> = ({navigation}) => {
           placeholder="Email Address"
           keyboardType="email-address"
         />
-
+        {/*
         <TouchableOpacity
           className="bg-red-600 p-4 rounded-xl items-center mt-5"
           onPress={() => navigation.navigate('Otp')}>
           <Text className="text-white text-lg font-bold">Send OTP</Text>
-        </TouchableOpacity>
+        </TouchableOpacity>*/}
       </View>
     </KeyboardAvoidingView>
   );

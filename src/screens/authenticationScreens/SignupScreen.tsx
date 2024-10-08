@@ -18,18 +18,19 @@ const SignupScreen: React.FC<SignupScreenProps> = ({navigation}) => {
   const [confirmPassword, setConfirmPassword] = useState('');
 
   const sendOtpToEmail = (email: string, otpCode: string) => {
-    // Use your email service (e.g., SendGrid, Firebase Cloud Function) to send OTP
-    // For example, if you're using SendGrid:
-    fetch('https://your-backend-api.com/send-otp', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
+    fetch(
+      'https://flourishing-kelpie-672381.netlify.app/.netlify/functions/send-otp',
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email,
+          otpCode,
+        }),
       },
-      body: JSON.stringify({
-        email,
-        otpCode,
-      }),
-    })
+    )
       .then(response => response.json())
       .then(data => {
         console.log('OTP sent successfully:', data);
@@ -55,9 +56,6 @@ const SignupScreen: React.FC<SignupScreenProps> = ({navigation}) => {
 
         // Send OTP to the user's email
         sendOtpToEmail(email, otpCode); // Function to send OTP via email (see below)
-
-        // Save OTP in user's data (you can save this in Firebase or a secure backend)
-        // Assuming you store OTP temporarily in a backend database or secure storage
 
         Alert.alert('Success', 'Account created! Please verify your email.');
 
