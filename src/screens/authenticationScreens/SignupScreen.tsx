@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useState, useEffect} from 'react';
 import {
   View,
   Text,
@@ -9,13 +9,47 @@ import {
 } from 'react-native';
 import {SignupScreenProps} from '../../navigation/StackParamList';
 import auth from '@react-native-firebase/auth';
+import firestore from '@react-native-firebase/firestore';
+import Icon from 'react-native-vector-icons/MaterialIcons'; // For cross and check icons
 
 const SignupScreen: React.FC<SignupScreenProps> = ({navigation}) => {
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
+  const [username, setUsername] = useState('');
+  const [usernameError, setUsernameError] = useState(''); // To store error message
+  const [isUsernameValid, setIsUsernameValid] = useState(false); // To track if username is valid
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+
+  // Function to check if the username is already taken
+  const checkUsername = async (enteredUsername: string) => {
+    if (enteredUsername.length < 3) {
+      setUsernameError('Username must be at least 3 characters.');
+      setIsUsernameValid(false);
+      return;
+    }
+
+    const usernameSnapshot = await firestore()
+      .collection('users')
+      .where('username', '==', enteredUsername)
+      .get();
+
+    if (!usernameSnapshot.empty) {
+      setUsernameError('Username is already taken.');
+      setIsUsernameValid(false);
+    } else {
+      setUsernameError('');
+      setIsUsernameValid(true);
+    }
+  };
+
+  useEffect(() => {
+    if (username !== '') {
+      // Call the function to check the username whenever it changes
+      checkUsername(username);
+    }
+  }, [username]);
 
   const sendOtpToEmail = (email: string, otpCode: string) => {
     fetch(
@@ -46,21 +80,41 @@ const SignupScreen: React.FC<SignupScreenProps> = ({navigation}) => {
       return;
     }
 
+    if (!isUsernameValid) {
+      Alert.alert('Error', 'Please choose a valid username.');
+      return;
+    }
+
     auth()
       .createUserWithEmailAndPassword(email, password)
-      .then(userCredential => {
+      .then(async userCredential => {
         const user = userCredential.user;
 
-        // Generate a 6-digit OTP
-        const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
+        try {
+          // Store user profile information in Firestore
+          await firestore().collection('users').doc(user.uid).set({
+            firstName: firstName,
+            lastName: lastName,
+            username: username, // Save username in Firestore
+            email: email,
+            createdAt: firestore.FieldValue.serverTimestamp(),
+          });
 
-        // Send OTP to the user's email
-        sendOtpToEmail(email, otpCode); // Function to send OTP via email (see below)
+          // If Firestore write is successful, generate and send the OTP
+          const otpCode = Math.floor(
+            100000 + Math.random() * 900000,
+          ).toString();
+          sendOtpToEmail(email, otpCode);
 
-        Alert.alert('Success', 'Account created! Please verify your email.');
+          Alert.alert('Success', 'Account created! Please verify your email.');
 
-        // Redirect to the OTP screen, passing the OTP and user's email
-        navigation.navigate('Otp', {email, otpCode}); // Pass the OTP and email to the Otp screen
+          // Redirect to the OTP screen, passing the OTP and user's email
+
+          navigation.navigate('Otp', {email, otpCode, purpose: 'signup'});
+        } catch (error) {
+          console.error('Error saving to Firestore:', error);
+          Alert.alert('Error', 'Failed to save user data. Please try again.');
+        }
       })
       .catch(error => {
         if (error.code === 'auth/email-already-in-use') {
@@ -92,14 +146,14 @@ const SignupScreen: React.FC<SignupScreenProps> = ({navigation}) => {
 
         <View className="flex-row mb-4">
           <TextInput
-            className="bg-gray-100 p-4 rounded-lg flex-1 mr-2"
+            className="bg-gray-100 border border-[#c5c6cc] p-4 rounded-3xl flex-1 mr-2"
             placeholder="First Name"
             keyboardType="default"
             value={firstName}
             onChangeText={setFirstName}
           />
           <TextInput
-            className="bg-gray-100 p-4 rounded-lg flex-1 ml-2"
+            className="bg-gray-100 border border-[#c5c6cc] p-4 rounded-3xl flex-1 ml-2"
             placeholder="Last Name"
             keyboardType="default"
             value={lastName}
@@ -107,22 +161,53 @@ const SignupScreen: React.FC<SignupScreenProps> = ({navigation}) => {
           />
         </View>
 
+        {/* Username input with validation */}
+        <View className="relative mb-4">
+          <TextInput
+            className={`bg-gray-100 border p-4 rounded-3xl ${
+              usernameError ? 'border-red-500' : 'border-[#c5c6cc]'
+            }`}
+            placeholder="Username"
+            keyboardType="default"
+            value={username}
+            onChangeText={setUsername}
+          />
+          {usernameError ? (
+            <Icon
+              name="cancel"
+              size={24}
+              color="red"
+              style={{position: 'absolute', right: 10, top: 15}}
+            />
+          ) : isUsernameValid ? (
+            <Icon
+              name="check-circle"
+              size={24}
+              color="green"
+              style={{position: 'absolute', right: 10, top: 15}}
+            />
+          ) : null}
+          {usernameError ? (
+            <Text className="text-red-500 text-xs mt-1">{usernameError}</Text>
+          ) : null}
+        </View>
+
         <TextInput
-          className="bg-gray-100 p-4 rounded-lg mb-4"
+          className="bg-gray-100 border border-[#c5c6cc] p-4 rounded-3xl mb-4"
           placeholder="Email Address"
           keyboardType="email-address"
           value={email}
           onChangeText={setEmail}
         />
         <TextInput
-          className="bg-gray-100 p-4 rounded-lg mb-4"
+          className="bg-gray-100 border border-[#c5c6cc] p-4 rounded-3xl mb-4"
           placeholder="Password"
           secureTextEntry={true}
           value={password}
           onChangeText={setPassword}
         />
         <TextInput
-          className="bg-gray-100 p-4 rounded-lg mb-4"
+          className="bg-gray-100 border border-[#c5c6cc] p-4 rounded-3xl mb-4"
           placeholder="Confirm Password"
           secureTextEntry={true}
           value={confirmPassword}
@@ -130,9 +215,9 @@ const SignupScreen: React.FC<SignupScreenProps> = ({navigation}) => {
         />
 
         <TouchableOpacity
-          className="bg-red-500 p-4 rounded-lg mt-4 items-center"
+          className="bg-red-500 w-full py-4  rounded-3xl mt-5 flex items-center"
           onPress={handleSignUp}>
-          <Text className="text-white text-lg font-bold">Get started</Text>
+          <Text className="text-white text-sm font-bold">Get started</Text>
         </TouchableOpacity>
 
         <View className="flex-row justify-center mt-5">

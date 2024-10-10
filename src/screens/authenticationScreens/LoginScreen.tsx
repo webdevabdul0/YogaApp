@@ -59,14 +59,26 @@ const LoginScreen: React.FC<LoginScreenProps> = ({navigation}) => {
       await auth().signInWithEmailAndPassword(email, password);
       navigation.replace('Main');
     } catch (error: any) {
-      if (error.code === 'auth/invalid-email') {
-        Alert.alert('Error', 'That email address is invalid.');
-      } else if (error.code === 'auth/user-not-found') {
-        Alert.alert('Error', 'No user found for that email.');
-      } else if (error.code === 'auth/wrong-password') {
-        Alert.alert('Error', 'Incorrect password.');
-      } else {
-        Alert.alert('Error', 'Something went wrong. Please try again.');
+      console.log('Error code:', error.code);
+
+      switch (error.code) {
+        case 'auth/invalid-email':
+          Alert.alert('Error', 'That email address is invalid.');
+          break;
+        case 'auth/user-not-found':
+          Alert.alert('Error', 'No user found for that email.');
+          break;
+        case 'auth/wrong-password':
+          Alert.alert('Error', 'Incorrect password.');
+          break;
+        case 'auth/invalid-credential': // This is the key error you're seeing
+          Alert.alert(
+            'Error',
+            'Invalid credentials. Please check your email and password.',
+          );
+          break;
+        default:
+          Alert.alert('Error', 'Something went wrong. Please try again.');
       }
     } finally {
       setLoading(false);
@@ -99,7 +111,7 @@ const LoginScreen: React.FC<LoginScreenProps> = ({navigation}) => {
               </Text>
 
               <TextInput
-                className="bg-gray-100 p-4 rounded-3xl my-2 text-base"
+                className="bg-gray-100 border border-[#c5c6cc] p-4 rounded-3xl my-2 text-base"
                 placeholder="Email Address"
                 keyboardType="email-address"
                 value={email}
@@ -107,7 +119,7 @@ const LoginScreen: React.FC<LoginScreenProps> = ({navigation}) => {
               />
 
               <TextInput
-                className="bg-gray-100 p-4 rounded-3xl my-2 text-base"
+                className="bg-gray-100 border border-[#c5c6cc] p-4 rounded-3xl my-2 text-base"
                 placeholder="Password"
                 secureTextEntry={true}
                 value={password}
@@ -122,7 +134,7 @@ const LoginScreen: React.FC<LoginScreenProps> = ({navigation}) => {
               </TouchableOpacity>
 
               <TouchableOpacity
-                className="bg-red-500 py-4 w-full rounded-3xl mt-5 items-center"
+                className="bg-red-500 w-full py-4  rounded-3xl mt-5 flex items-center"
                 onPress={handleLogin}
                 disabled={loading}>
                 <Text className="text-white text-sm font-bold">
