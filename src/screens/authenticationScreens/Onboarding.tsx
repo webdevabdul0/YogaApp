@@ -41,6 +41,16 @@ const Onboarding: React.FC<OnboardingScreenProps> = ({navigation}) => {
               <Text className="text-red-500 font-bold">Log In</Text>
             </Text>
           </TouchableOpacity>
+
+          <TouchableOpacity onPress={() => navigation.navigate('Profile')}>
+            <Text className="text-white text-sm">
+              Click To skip to{' '}
+              <Text className="text-red-500 font-bold">
+                BETA PROFILE SCREEN
+              </Text>
+            </Text>
+          </TouchableOpacity>
+          <Text className="text-gray-500 text-sm font-bold">VER 1.0.0</Text>
         </View>
       </ImageBackground>
     </View>
