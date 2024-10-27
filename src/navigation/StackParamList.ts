@@ -1,5 +1,8 @@
 import {RouteProp} from '@react-navigation/native';
-import {NativeStackNavigationProp} from '@react-navigation/native-stack';
+import {
+  NativeStackNavigationProp,
+  NativeStackScreenProps,
+} from '@react-navigation/native-stack';
 
 // Define types for your stack parameter list
 export type StackParamList = {
@@ -10,8 +13,16 @@ export type StackParamList = {
   Otp: {email: string; otpCode: string; purpose: 'signup' | 'forgotPassword'};
   ForgotPassword: undefined;
   Main: undefined;
+  Home: undefined;
   Profile: undefined;
-  PoseDetail: {poseId: number}; // Add this
+  PoseDetail: {
+    pose: {
+      id: number;
+      name: string;
+      duration: string;
+      image: any;
+    };
+  }; // Updated PoseDetail with full pose object
 };
 
 // Define types for each screen's navigation and route props
@@ -43,6 +54,7 @@ export type ProfileScreenProps = {
 export type HomeScreenProps = {
   navigation: NativeStackNavigationProp<StackParamList, 'Main'>;
 };
-export type PoseDetailScreenProps = {
-  navigation: NativeStackNavigationProp<StackParamList, 'PoseDetail'>;
-};
+export type PoseDetailScreenProps = NativeStackScreenProps<
+  StackParamList,
+  'PoseDetail'
+>;

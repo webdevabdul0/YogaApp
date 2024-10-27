@@ -33,7 +33,7 @@ function TabNavigator() {
         tabBarInactiveTintColor: 'gray',
       })}>
       <Tab.Screen
-        name="Home"
+        name="HomeStack"
         component={HomeStackNavigator}
         options={{headerShown: false}} // Hides the header for the Home screen
       />
