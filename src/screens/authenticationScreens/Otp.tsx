@@ -39,23 +39,14 @@ const Otp: React.FC<OtpScreenProps> = ({route, navigation}) => {
     const userEnteredOtp = enteredOtp.join(''); // Join entered digits to form the OTP string
 
     if (userEnteredOtp === otpCode) {
-      // Mark user as verified in Firebase
-      const user = auth().currentUser;
-      if (user) {
-        user
-          .sendEmailVerification()
-          .then(() => {
-            Alert.alert('Success', 'Email verified!');
-            // Conditionally navigate based on the purpose
-            if (route.params.purpose === 'forgotPassword') {
-              navigation.navigate('Main'); // Navigate to Main screen if purpose is 'forgotPassword'
-            } else if (route.params.purpose === 'signup') {
-              navigation.navigate('Profile'); // Navigate to Profile Information screen if purpose is 'signup'
-            }
-          })
-          .catch(error => {
-            console.error('Email verification error:', error);
-          });
+      // The OTP is valid, so we don't need to send any Firebase email verification
+      Alert.alert('Success', 'OTP verified!');
+
+      // Conditionally navigate based on the purpose
+      if (route.params.purpose === 'forgotPassword') {
+        navigation.navigate('Main'); // Navigate to Main screen if purpose is 'forgotPassword'
+      } else if (route.params.purpose === 'signup') {
+        navigation.navigate('Profile'); // Navigate to Profile Information screen if purpose is 'signup'
       }
     } else {
       Alert.alert('Error', 'Invalid OTP. Please try again.');

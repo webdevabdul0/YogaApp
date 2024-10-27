@@ -9,8 +9,9 @@ export type StackParamList = {
   Signup: undefined;
   Otp: {email: string; otpCode: string; purpose: 'signup' | 'forgotPassword'};
   ForgotPassword: undefined;
-  Main: undefined; // The Main screen corresponds to your TabNavigator
+  Main: undefined;
   Profile: undefined;
+  PoseDetail: {poseId: number}; // Add this
 };
 
 // Define types for each screen's navigation and route props
@@ -37,4 +38,11 @@ export type ForgotPasswordScreenProps = {
 
 export type ProfileScreenProps = {
   navigation: NativeStackNavigationProp<StackParamList, 'Profile'>;
+};
+
+export type HomeScreenProps = {
+  navigation: NativeStackNavigationProp<StackParamList, 'Main'>;
+};
+export type PoseDetailScreenProps = {
+  navigation: NativeStackNavigationProp<StackParamList, 'PoseDetail'>;
 };
