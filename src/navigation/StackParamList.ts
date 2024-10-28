@@ -17,10 +17,16 @@ export type StackParamList = {
   Profile: undefined;
   PoseDetail: {
     pose: {
-      id: number;
-      name: string;
-      duration: string;
-      image: any;
+      id: number; // Unique identifier for the pose
+      image: any; // Image source
+      name: string; // Pose name
+      difficulty: string; // Pose difficulty level
+      gender: string; // Gender info (e.g., "Male & Female")
+      description: string; // Description of the pose
+      duration: string; // Duration (e.g., "2 minutes")
+      targetMuscle: string; // Target muscle (e.g., "Core")
+      goal: string; // Main goal (e.g., "Improve Posture, Improve Balance")
+      videoUri: any;
     };
   }; // Updated PoseDetail with full pose object
 };
