@@ -6,6 +6,7 @@ import {
   ScrollView,
   Modal,
   TouchableWithoutFeedback,
+  Animated,
 } from 'react-native';
 import {PoseDetailScreenProps} from '../navigation/StackParamList';
 import Icon from 'react-native-vector-icons/FontAwesome';
@@ -13,30 +14,61 @@ import {WebView} from 'react-native-webview';
 import React, {useState} from 'react';
 import DatePicker from 'react-native-date-picker';
 import PushNotification from 'react-native-push-notification';
+import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 
 const PoseDetailScreen: React.FC<PoseDetailScreenProps> = ({
   route,
   navigation,
 }) => {
-  const {pose} = route.params;
+  const [modalAnim] = useState(new Animated.Value(0));
   const [isModalVisible, setModalVisible] = useState(false);
+  // Use Animated API for content slide animation
+  React.useEffect(() => {
+    if (isModalVisible) {
+      // Animate the modal content when modal is visible
+      Animated.timing(modalAnim, {
+        toValue: 1,
+        duration: 300,
+        useNativeDriver: true,
+      }).start();
+    } else {
+      // Reset animation when modal is closed
+      Animated.timing(modalAnim, {
+        toValue: 0,
+        duration: 300,
+        useNativeDriver: true,
+      }).start();
+    }
+  }, [isModalVisible]);
+
+  const {pose} = route.params;
+
   const [date, setDate] = useState(new Date());
   const [isDatePickerVisible, setIsDatePickerVisible] = useState(false);
 
-  const handleNotification = () => {
-    PushNotification.localNotification({
+  const handleNotification = (scheduledDate: Date) => {
+    PushNotification.localNotificationSchedule({
       channelId: 'default-channel-id',
       title: 'Yoga Session Reminder',
       message: 'Don’t forget your scheduled yoga session!',
+      date: scheduledDate, // Use the passed scheduled date
+      allowWhileIdle: true, // Trigger even if the device is idle
     });
+
+    console.log('Notification scheduled for:', scheduledDate);
+    setModalVisible(false);
   };
 
-  const toggleModal = () => {
-    setModalVisible(!isModalVisible);
-  };
+  {
+    /*
 
   const handleOutsidePress = () => {
     setModalVisible(false);
+  };*/
+  }
+
+  const toggleModal = () => {
+    setModalVisible(!isModalVisible);
   };
 
   const showDatePicker = () => {
@@ -127,38 +159,84 @@ const PoseDetailScreen: React.FC<PoseDetailScreenProps> = ({
 
         {/* Modal */}
         <Modal
-          animationType="slide"
+          animationType="none" // No animation for overlay
           transparent
           visible={isModalVisible}
           onRequestClose={toggleModal}>
-          <TouchableWithoutFeedback onPress={handleOutsidePress}>
+          <TouchableWithoutFeedback onPress={toggleModal}>
             <View className="flex-1 justify-end bg-black/50">
               <TouchableWithoutFeedback>
-                <View className="bg-white rounded-t-3xl p-5 max-h-[60%]">
-                  <Text className="text-center text-lg font-bold mb-4">
+                <Animated.View
+                  style={{
+                    transform: [
+                      {
+                        translateY: modalAnim.interpolate({
+                          inputRange: [0, 1],
+                          outputRange: [500, 0],
+                        }),
+                      },
+                    ],
+                    backgroundColor: 'white',
+                    borderTopLeftRadius: 24,
+                    borderTopRightRadius: 24,
+                    padding: 20,
+                    maxHeight: '60%',
+                  }}>
+                  <Text className="text-start text-xl font-bold mb-4 text-black/80">
                     Schedule Date & Time
                   </Text>
-                  <Text className="text-center text-base py-2">
-                    {date.toDateString()}
-                  </Text>
-                  <Text className="text-center text-base py-2">
-                    {date.toLocaleTimeString()}
-                  </Text>
+                  <View className="flex-row w-full gap-3">
+                    <TouchableOpacity
+                      className="bg-red-500/10 flex-1 rounded-2xl p-3 mt-5 border-2 border-red-500/70 flex-row items-center justify-between"
+                      onPress={showDatePicker}>
+                      <View>
+                        <Text className="font-semibold text-sm">
+                          Select Date
+                        </Text>
+                        <Text className="text-black/70 font-bold text-center text-base">
+                          {date.toDateString()}
+                        </Text>
+                      </View>
+
+                      <MaterialIcons
+                        name="keyboard-arrow-down"
+                        color="rgba(0, 0, 0, 0.8)"
+                        size={24}
+                      />
+                    </TouchableOpacity>
+
+                    <TouchableOpacity
+                      className="bg-red-500/10 flex-1 rounded-2xl p-3 mt-5 border-2 border-red-500/70 flex-row items-center justify-between"
+                      onPress={showDatePicker}>
+                      <View>
+                        <Text className="font-semibold text-sm">
+                          Select Time
+                        </Text>
+                        <Text className="text-black/70 font-bold text-center text-base">
+                          {date.toLocaleTimeString([], {
+                            hour: '2-digit',
+                            minute: '2-digit',
+                          })}
+                        </Text>
+                      </View>
+
+                      <MaterialIcons
+                        name="keyboard-arrow-down"
+                        color="rgba(0, 0, 0, 0.8)"
+                        size={24}
+                      />
+                    </TouchableOpacity>
+                  </View>
+
                   <TouchableOpacity
-                    className="bg-red-500 rounded-lg p-3 mt-5"
-                    onPress={showDatePicker}>
-                    <Text className="text-white font-bold text-center">
-                      Select Date & Time
-                    </Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity
-                    className="bg-red-500 rounded-lg p-3 mt-5"
-                    onPress={handleNotification}>
+                    className="bg-red-500 h-12 rounded-full flex-row justify-center items-center px-5 mt-5"
+                    onPress={() => handleNotification(date)} // Pass the selected date
+                  >
                     <Text className="text-white font-bold text-center">
                       Schedule Time & Date
                     </Text>
                   </TouchableOpacity>
-                </View>
+                </Animated.View>
               </TouchableWithoutFeedback>
             </View>
           </TouchableWithoutFeedback>
@@ -195,9 +273,7 @@ const PoseDetailScreen: React.FC<PoseDetailScreenProps> = ({
       {/* Sticky Button */}
       <TouchableOpacity
         className="bg-red-500 h-12 rounded-full flex-row justify-center items-center px-5 absolute bottom-5 self-center w-[90%]"
-        onPress={() =>
-          navigation.navigate('CameraStream', {targetPose: pose.name})
-        }>
+        onPress={() => navigation.navigate('CameraStream', {pose})}>
         <View className="mr-2">
           <Icon name="play" size={16} color="white" />
         </View>

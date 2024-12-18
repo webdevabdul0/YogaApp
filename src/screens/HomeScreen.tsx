@@ -1,14 +1,16 @@
-import React from 'react';
+import React, {useEffect, useState} from 'react';
 import {
   View,
   Text,
+  Image,
   ScrollView,
   ImageBackground,
   TouchableOpacity,
 } from 'react-native';
-
+import auth from '@react-native-firebase/auth';
 import {HomeScreenProps} from '../navigation/StackParamList';
-
+import firestore from '@react-native-firebase/firestore';
+import {useFocusEffect} from '@react-navigation/native';
 const yogaPoses = [
   {
     id: 1,
@@ -64,15 +66,105 @@ const yogaPoses = [
   },
 ];
 
-const HomeScreen: React.FC<HomeScreenProps> = ({navigation}) => {
+const HomeScreen: React.FC<HomeScreenProps> = ({navigation, route}) => {
+  const [userData, setUserData] = useState({
+    firstName: '',
+    lastName: '',
+    username: '',
+    profilePic: '', // Store profile picture URL here
+  });
+
+  const [refreshKey, setRefreshKey] = useState(0); // Key to force re-render
+
+  useFocusEffect(
+    React.useCallback(() => {
+      if (route.params?.refresh) {
+        // Trigger the refresh logic
+        setRefreshKey(prevKey => prevKey + 1);
+
+        // Clear the refresh flag
+        navigation.setParams({refresh: false});
+      }
+    }, [route.params, navigation]), // Ensure route.params is a dependency
+  );
+
+  useEffect(() => {
+    const fetchUserData = async () => {
+      const user = auth().currentUser;
+
+      if (user) {
+        try {
+          const userDoc = await firestore()
+            .collection('users')
+            .doc(user.uid)
+            .get();
+
+          if (userDoc.exists) {
+            const data = userDoc.data();
+            setUserData({
+              firstName: data?.firstName || '',
+              lastName: data?.lastName || '',
+              username: data?.username || '',
+              profilePic: data?.profilePic || '', // Assuming profilePic contains the Firebase storage URL
+            });
+          } else {
+            console.log('User document not found.');
+          }
+        } catch (error) {
+          console.error('Error fetching user data:', error);
+        }
+      } else {
+        console.log('No user is logged in.');
+      }
+    };
+
+    fetchUserData();
+  }, [refreshKey]); // Fetch user data whenever refreshKey changes
+
+  useEffect(() => {
+    // Optional: If you want to listen to changes in profilePic or other data
+    if (userData.profilePic) {
+      console.log('Profile picture updated:', userData.profilePic);
+    }
+  }, [userData.profilePic]); // Re-run this effect when profilePic changes
+
   return (
     <View className="flex-1 bg-white">
-      <Text className="text-4xl font-extrabold self-center my-7 text-black">
-        My <Text className="text-red-500 font-black">Yoga</Text>
-      </Text>
+      <View className="flex-row justify-between items-center px-4 py-2">
+        <Text className="text-3xl font-extrabold self-center my-4 text-black">
+          My
+          <Text className="text-red-500 font-black">Yoga</Text>
+        </Text>
+
+        {/* Profile image */}
+        {userData.profilePic ? (
+          <View
+            style={{
+              width: 40, // Increase size of circle
+              height: 40, // Increase size of circle
+              borderRadius: 25, // Half of width/height for a perfect circle
+              overflow: 'hidden',
+              justifyContent: 'center',
+              alignItems: 'center',
+              shadowColor: '#000', // Shadow color
+              shadowOffset: {width: 0, height: 4}, // Slight shadow offset to create elevation effect
+              shadowOpacity: 0.1, // Shadow opacity
+              shadowRadius: 6, // Shadow spread
+              elevation: 5, // For Android shadow
+            }}>
+            <Image
+              key={userData.profilePic} // Add a key based on the URL to force re-render on change
+              source={{uri: userData.profilePic}}
+              style={{width: '100%', height: '100%', borderRadius: 25}} // Ensuring the image is circular
+            />
+          </View>
+        ) : (
+          <Text>No Profile Pic</Text>
+        )}
+      </View>
 
       <ScrollView className="px-4 ">
-        <Text className="text-[22px] font-bold self-start mb-5 text-black">
+        <Text className="text-[20px] font-bold self-start mb-5 text-black">
           Discover the Best Yoga
         </Text>
         {yogaPoses.map(pose => (

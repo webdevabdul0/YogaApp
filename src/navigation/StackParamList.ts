@@ -12,10 +12,27 @@ export type StackParamList = {
   Signup: undefined;
   Otp: {email: string; otpCode: string; purpose: 'signup' | 'forgotPassword'};
   ForgotPassword: undefined;
-  Main: undefined;
-  HomeScreen: undefined;
+  Main: {
+    refresh?: boolean;
+  };
+  HomeScreen: {
+    refresh?: boolean;
+  };
   Profile: undefined;
-  CameraStream: {targetPose: string};
+  CameraStream: {
+    pose: {
+      id: number; // Unique identifier for the pose
+      image: any; // Image source
+      name: string; // Pose name
+      difficulty: string; // Pose difficulty level
+      gender: string; // Gender info (e.g., "Male & Female")
+      description: string; // Description of the pose
+      duration: string; // Duration (e.g., "2 minutes")
+      targetMuscle: string; // Target muscle (e.g., "Core")
+      goal: string; // Main goal (e.g., "Improve Posture, Improve Balance")
+      videoUri: any;
+    };
+  };
   SettingsScreen: {refresh?: boolean};
   Notifications: undefined;
   Appearance: undefined;
@@ -67,6 +84,7 @@ export type ProfileScreenProps = {
 
 export type HomeScreenProps = {
   navigation: NativeStackNavigationProp<StackParamList, 'Main'>;
+  route: RouteProp<StackParamList, 'SettingsScreen'>;
 };
 export type PoseDetailScreenProps = NativeStackScreenProps<
   StackParamList,

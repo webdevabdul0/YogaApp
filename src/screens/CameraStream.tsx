@@ -1,5 +1,12 @@
 import * as React from 'react';
-import {Modal, TouchableOpacity, StyleSheet, Text, View} from 'react-native';
+import {
+  Modal,
+  TouchableOpacity,
+  StyleSheet,
+  Text,
+  View,
+  ActivityIndicator,
+} from 'react-native';
 import {
   MediapipeCamera,
   RunningMode,
@@ -9,12 +16,10 @@ import {
   type PoseDetectionResultBundle,
   type ViewCoordinator,
 } from 'react-native-mediapipe';
-
 import {
   useCameraPermission,
   type CameraPosition,
 } from 'react-native-vision-camera';
-import {useRoute} from '@react-navigation/native';
 import {useState} from 'react';
 import {useSettings} from '../app-settings';
 import {PoseDrawFrame} from './Drawing';
@@ -26,10 +31,12 @@ import {
   TreePoseFeedback,
 } from '../postureUtils';
 import {CameraScreenProps} from '../navigation/StackParamList';
+import Ionicons from 'react-native-vector-icons/Ionicons'; // Import icon library
 
-export const CameraStream: React.FC<CameraScreenProps> = () => {
-  const route = useRoute<CameraScreenProps['route']>();
-
+export const CameraStream: React.FC<CameraScreenProps> = ({
+  navigation,
+  route,
+}) => {
   const {settings} = useSettings();
   const camPerm = useCameraPermission();
   const [permsGranted, setPermsGranted] = React.useState<{
@@ -86,7 +93,37 @@ export const CameraStream: React.FC<CameraScreenProps> = () => {
     return feedbackElements;
   };
 
-  const targetPose = route.params?.targetPose;
+  const {pose} = route.params;
+  const targetPose = pose.name;
+
+  const handleEndSession = () => {
+    navigation.navigate('PoseDetail', {pose});
+    // Add logic for ending session, such as navigating back or clearing state
+  };
+
+  const [timer, setTimer] = React.useState(120); // 2 minutes in seconds
+  const [timerActive, setTimerActive] = React.useState(false); // Initially the timer is not active
+
+  React.useEffect(() => {
+    if (!timerActive) return;
+
+    const intervalId = setInterval(() => {
+      setTimer(prevTimer => {
+        if (prevTimer === 0) {
+          clearInterval(intervalId);
+          handleEndSession(); // Automatically end session when timer hits 0
+          return 0;
+        }
+        return prevTimer - 1;
+      });
+    }, 1000); // Decrease timer every second
+
+    return () => clearInterval(intervalId); // Cleanup interval on unmount
+  }, [timerActive]);
+
+  const formattedTime = `${Math.floor(timer / 60)
+    .toString()
+    .padStart(2, '0')}:${(timer % 60).toString().padStart(2, '0')}`;
 
   React.useEffect(() => {
     console.log('Navigated to CameraStream with settings:', settings);
@@ -95,20 +132,23 @@ export const CameraStream: React.FC<CameraScreenProps> = () => {
     askForPermissions();
   }, [settings]);
 
-  // Update permissions state after checking
   const askForPermissions = React.useCallback(() => {
     if (camPerm.hasPermission) {
       setPermsGranted(prev => ({...prev, cam: true}));
-      setIsLoading(false); // If permission granted, stop loading
+      setIsLoading(false);
     } else {
       camPerm.requestPermission().then(granted => {
         setPermsGranted(prev => ({...prev, cam: granted}));
-        setIsLoading(false); // Stop loading after permission is granted
+        setIsLoading(false);
       });
     }
   }, [camPerm]);
 
-  const [active, setActive] = React.useState<CameraPosition>('back'); // Set default to 'front'
+  const [active, setActive] = React.useState<CameraPosition>('back');
+  // Camera switch function
+  const toggleCamera = () => {
+    setActive(prev => (prev === 'back' ? 'front' : 'back'));
+  };
 
   const connections = useSharedValue<SkPoint[]>([]);
   const [postureCorrect, setPostureCorrect] = React.useState(false);
@@ -153,9 +193,14 @@ export const CameraStream: React.FC<CameraScreenProps> = () => {
       } else if (targetPose === 'Tree Pose') {
         const feedback = checkTreePose(pts);
         setFeedback(feedback);
+        if (feedback.treePose.correct && !timerActive) {
+          setTimerActive(true); // Start the timer when the pose is correct for the first time
+        } else if (!feedback.treePose.correct && timerActive) {
+          setTimerActive(false); // Stop the timer if pose is not correct
+        }
       }
     },
-    [connections, targetPose],
+    [connections, targetPose, timerActive],
   );
 
   const onError = React.useCallback((error: DetectionError): void => {
@@ -175,10 +220,12 @@ export const CameraStream: React.FC<CameraScreenProps> = () => {
   if (isLoading) {
     return (
       <View style={styles.loadingContainer}>
-        <Text style={styles.loadingText}>Initializing...</Text>
+        <ActivityIndicator size="large" color="#FFFFFF" />
+        <Text style={styles.loadingText}>Setting up Camera...</Text>
       </View>
     );
   }
+
   if (permsGranted.cam) {
     return (
       <View style={styles.container}>
@@ -188,9 +235,31 @@ export const CameraStream: React.FC<CameraScreenProps> = () => {
           activeCamera={active}
           resizeMode="cover"
         />
+
         <PoseDrawFrame connections={connections} style={styles.box} />
 
-        {/* Container for feedback at the bottom */}
+        <TouchableOpacity
+          style={styles.cameraSwitchButton}
+          onPress={toggleCamera}>
+          <Ionicons name="camera-reverse" size={30} color="white" />
+        </TouchableOpacity>
+
+        <View style={styles.timerContainer}>
+          {Feedback.treePose.correct === false && (
+            <Text style={styles.poseMessage}>Make a Tree Pose</Text>
+          )}
+          {Feedback.treePose.correct === true && (
+            <Text style={styles.poseMessage}>Good! Stay in Position</Text>
+          )}
+          <Text style={styles.timerText}>{formattedTime}</Text>
+        </View>
+
+        {/* End Session Button */}
+        <TouchableOpacity
+          style={styles.endSessionButton}
+          onPress={handleEndSession}>
+          <Text style={styles.endSessionText}>End Session</Text>
+        </TouchableOpacity>
         <View style={styles.feedbackContainer}>{renderFeedback()}</View>
       </View>
     );
@@ -228,10 +297,29 @@ const NeedPermissions: React.FC<{askForPermissions: () => void}> = ({
     </Modal>
   );
 };
+
 const styles = StyleSheet.create({
+  endSessionButton: {
+    position: 'absolute',
+    bottom: 30,
+    backgroundColor: '#EB544D',
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 20,
+    shadowColor: '#000',
+    shadowOffset: {width: 0, height: 4},
+    shadowOpacity: 0.3,
+    shadowRadius: 6,
+    elevation: 5,
+  },
+  endSessionText: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -251,11 +339,11 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: 'bold',
     marginBottom: 10,
-    color: '#000',
+    color: '#333',
   },
   modalMessage: {
     fontSize: 14,
-    color: '#71727a',
+    color: '#666',
     textAlign: 'center',
     marginBottom: 20,
   },
@@ -267,19 +355,19 @@ const styles = StyleSheet.create({
   cancelButton: {
     flex: 1,
     marginRight: 10,
-    backgroundColor: '#e3e4e7',
+    backgroundColor: '#E3E4E7',
     padding: 12,
     borderRadius: 8,
     alignItems: 'center',
   },
   cancelButtonText: {
-    color: '#000',
+    color: '#333',
     fontSize: 14,
   },
   confirmButton: {
     flex: 1,
     marginLeft: 10,
-    backgroundColor: '#eb544d',
+    backgroundColor: '#EB544D',
     padding: 12,
     borderRadius: 8,
     alignItems: 'center',
@@ -290,7 +378,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   container: {
-    backgroundColor: '#FFF0F0',
+    backgroundColor: '#F6F6F6',
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
@@ -303,72 +391,69 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '100%',
   },
-  permsButton: {
-    padding: 15.5,
-    paddingRight: 25,
-    paddingLeft: 25,
-    backgroundColor: '#F95F48',
-    borderRadius: 5,
-    margin: 15,
-  },
-  permsButtonText: {
-    fontSize: 17,
-    color: 'black',
-    fontWeight: 'bold',
-  },
-  permissionsBox: {
-    backgroundColor: '#F3F3F3',
-    padding: 20,
+  feedbackContainer: {
+    position: 'absolute',
+    bottom: 30,
+    left: 20,
+    right: 20,
+    padding: 12,
+    backgroundColor: 'rgba(0, 0, 0, 0.6)',
     borderRadius: 12,
-    borderWidth: 1,
-    borderColor: '#CCCACA',
-    marginBottom: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 50,
   },
-  noPermsText: {
-    fontSize: 20,
+  feedbackText: {
+    color: 'white',
+    fontSize: 16,
     fontWeight: 'bold',
-    color: 'black',
-  },
-  permsInfoText: {
-    fontSize: 15,
-    color: 'black',
-    marginTop: 12,
+    textAlign: 'center',
+    marginBottom: 4,
   },
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#FFF0F0',
-  },
-  lottieAnimation: {
-    width: 150,
-    height: 150,
+    backgroundColor: '#EB544D',
   },
   loadingText: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: '#eb544d',
+    color: '#FFFFFF',
     marginTop: 20,
-    opacity: 0, // Start with invisible text to animate
-    transform: [{translateY: 10}],
   },
-
-  feedbackContainer: {
+  cameraSwitchButton: {
     position: 'absolute',
-    bottom: 20, // Position it at the bottom
-    left: 20,
+    top: 40,
     right: 20,
+    backgroundColor: 'rgba(0, 0, 0, 0.6)',
     padding: 10,
-    backgroundColor: 'rgba(0, 0, 0, 0.6)', // Slight background to make text readable
-    borderRadius: 10,
-    alignItems: 'center',
-    justifyContent: 'center',
+    borderRadius: 30,
+    shadowColor: '#000',
+    shadowOffset: {width: 0, height: 4},
+    shadowOpacity: 0.3,
+    shadowRadius: 6,
+    elevation: 5,
   },
-  feedbackText: {
-    color: 'white',
-    fontSize: 18,
+  timerContainer: {
+    position: 'absolute',
+    top: 40,
+    left: 0,
+    right: 0,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  timerText: {
+    fontSize: 28,
     fontWeight: 'bold',
-    marginBottom: 5,
+    color: '#FFFFFF',
+    fontFamily: 'Arial', // Choose a beautiful font
+  },
+  poseMessage: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: 'bold',
     textAlign: 'center',
+    marginBottom: 10,
   },
 });
