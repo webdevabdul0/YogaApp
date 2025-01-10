@@ -99,14 +99,14 @@ const LoginScreen: React.FC<LoginScreenProps> = ({navigation}) => {
               resizeMode="cover">
               <View className="flex items-center mt-12">
                 <Text className="text-3xl font-black">
-                  <Text className="text-black">My</Text>
+                  <Text className="text-[#DBD6D6]">My</Text>
                   <Text className="text-red-500">Yoga</Text>
                 </Text>
               </View>
             </ImageBackground>
 
             <View className="px-5 py-7">
-              <Text className="text-2xl font-extrabold mb-5 text-black">
+              <Text className="text-2xl font-black mb-5 text-black">
                 Log In
               </Text>
 

@@ -7,24 +7,24 @@ const yogaBackground = require('../../assets/OnboardingScreenBg.png');
 const Onboarding: React.FC<OnboardingScreenProps> = ({navigation}) => {
   return (
     <View className="flex-1">
-      <ImageBackground source={yogaBackground} className="flex-1">
+      <ImageBackground source={yogaBackground} className="flex-1 ">
         {/* Container for MyYoga text at the top */}
         <View className="flex flex-1 justify-start items-center mt-12">
           <Text className="text-3xl font-black ">
-            <Text className="text-black">My</Text>
+            <Text className="text-[#DBD6D6]">My</Text>
             <Text className="text-red-500">Yoga</Text>
           </Text>
         </View>
 
         {/* Container for the bottom content */}
-        <View className="flex justify-end items-center mb-10 px-4">
+        <View className="flex justify-end items-center mb-8 px-4">
           <Text
             className="text-2xl font-black text-white text
-          text-center mb-3">
+          text-center mb-2">
             Welcome to MyYoga
           </Text>
 
-          <Text className="text-sm text-white text-center mb-10">
+          <Text className="text-sm text-white text-center mb-7">
             Enjoy these pre-made components and worry only about creating the
             best product ever.
           </Text>

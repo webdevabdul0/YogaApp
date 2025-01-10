@@ -11,6 +11,7 @@ import auth from '@react-native-firebase/auth';
 import {HomeScreenProps} from '../navigation/StackParamList';
 import firestore from '@react-native-firebase/firestore';
 import {useFocusEffect} from '@react-navigation/native';
+
 const yogaPoses = [
   {
     id: 1,
@@ -129,12 +130,24 @@ const HomeScreen: React.FC<HomeScreenProps> = ({navigation, route}) => {
   }, [userData.profilePic]); // Re-run this effect when profilePic changes
 
   return (
-    <View className="flex-1 bg-white">
-      <View className="flex-row justify-between items-center px-4 py-2">
-        <Text className="text-3xl font-extrabold self-center my-4 text-black">
-          My
-          <Text className="text-red-500 font-black">Yoga</Text>
-        </Text>
+    <ScrollView className="flex-1 bg-white">
+      {/* Header Section */}
+      <View className="px-4 pt-8 pb-2 flex-row items-start">
+        {/* Text and Profile Image Container */}
+        <View className="flex-1">
+          {/* Conditional rendering of the first name */}
+          <Text className="text-3xl font-extrabold text-black">
+            Hey{' '}
+            <Text className="text-red-500 font-black">
+              {userData.firstName}
+            </Text>
+          </Text>
+
+          {/* "Welcome Back to MyYoga" in grey */}
+          <Text className="text-base font-medium text-gray-500 mb-4">
+            Welcome Back to MyYoga
+          </Text>
+        </View>
 
         {/* Profile image */}
         {userData.profilePic ? (
@@ -159,11 +172,12 @@ const HomeScreen: React.FC<HomeScreenProps> = ({navigation, route}) => {
             />
           </View>
         ) : (
-          <Text>No Profile Pic</Text>
+          <Text>Profile</Text>
         )}
       </View>
 
-      <ScrollView className="px-4 ">
+      {/* Body Section */}
+      <View className="px-4">
         <Text className="text-[20px] font-bold self-start mb-5 text-black">
           Discover the Best Yoga
         </Text>
@@ -182,8 +196,8 @@ const HomeScreen: React.FC<HomeScreenProps> = ({navigation, route}) => {
             </ImageBackground>
           </TouchableOpacity>
         ))}
-      </ScrollView>
-    </View>
+      </View>
+    </ScrollView>
   );
 };
 

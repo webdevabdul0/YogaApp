@@ -32,7 +32,6 @@ function TabNavigator() {
         tabBarInactiveTintColor: 'gray',
         tabBarStyle: {
           paddingBottom: 20,
-
           height: 75, // Adjust height for better spacing
         },
         tabBarLabelStyle: {
