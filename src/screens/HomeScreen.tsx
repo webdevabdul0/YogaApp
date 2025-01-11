@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, {useEffect, useState, useRef} from 'react';
 import {
   View,
   Text,
@@ -6,11 +6,16 @@ import {
   ScrollView,
   ImageBackground,
   TouchableOpacity,
+  TextInput,
+  TouchableWithoutFeedback,
 } from 'react-native';
 import auth from '@react-native-firebase/auth';
-import {HomeScreenProps} from '../navigation/StackParamList';
 import firestore from '@react-native-firebase/firestore';
+import {HomeScreenProps} from '../navigation/StackParamList';
 import {useFocusEffect} from '@react-navigation/native';
+import {center} from '@shopify/react-native-skia';
+import Icon from 'react-native-vector-icons/MaterialIcons';
+import Calendar from './components/Calender';
 
 const yogaPoses = [
   {
@@ -68,129 +73,201 @@ const yogaPoses = [
 ];
 
 const HomeScreen: React.FC<HomeScreenProps> = ({navigation, route}) => {
+  const inputRef = useRef<TextInput>(null);
   const [userData, setUserData] = useState({
-    firstName: '',
-    lastName: '',
-    username: '',
-    profilePic: '', // Store profile picture URL here
+    firstName: 'Abdul',
+    profilePic: '',
   });
 
-  const [refreshKey, setRefreshKey] = useState(0); // Key to force re-render
-
-  useFocusEffect(
-    React.useCallback(() => {
-      if (route.params?.refresh) {
-        // Trigger the refresh logic
-        setRefreshKey(prevKey => prevKey + 1);
-
-        // Clear the refresh flag
-        navigation.setParams({refresh: false});
-      }
-    }, [route.params, navigation]), // Ensure route.params is a dependency
-  );
+  const [searchQuery, setSearchQuery] = useState(''); // State to store the search query
+  const [filteredPoses, setFilteredPoses] = useState(yogaPoses); // Filtered yoga poses based on search
+  const [isSearchActive, setIsSearchActive] = useState(false); // Track if search is active
+  // Update filteredPoses whenever searchQuery changes
+  useEffect(() => {
+    if (searchQuery) {
+      const filtered = yogaPoses.filter(pose =>
+        pose.name.toLowerCase().includes(searchQuery.toLowerCase()),
+      );
+      setFilteredPoses(filtered);
+    } else {
+      setFilteredPoses(yogaPoses); // Show all poses if no search query
+    }
+  }, [searchQuery]);
 
   useEffect(() => {
     const fetchUserData = async () => {
       const user = auth().currentUser;
-
       if (user) {
         try {
           const userDoc = await firestore()
             .collection('users')
             .doc(user.uid)
             .get();
-
           if (userDoc.exists) {
             const data = userDoc.data();
             setUserData({
-              firstName: data?.firstName || '',
-              lastName: data?.lastName || '',
-              username: data?.username || '',
-              profilePic: data?.profilePic || '', // Assuming profilePic contains the Firebase storage URL
+              firstName: data?.firstName || 'User',
+              profilePic: data?.profilePic || '',
             });
-          } else {
-            console.log('User document not found.');
           }
         } catch (error) {
-          console.error('Error fetching user data:', error);
+          console.error(error);
         }
-      } else {
-        console.log('No user is logged in.');
       }
     };
-
     fetchUserData();
-  }, [refreshKey]); // Fetch user data whenever refreshKey changes
-
-  useEffect(() => {
-    // Optional: If you want to listen to changes in profilePic or other data
-    if (userData.profilePic) {
-      console.log('Profile picture updated:', userData.profilePic);
-    }
-  }, [userData.profilePic]); // Re-run this effect when profilePic changes
+  }, []);
 
   return (
-    <ScrollView className="flex-1 bg-white">
-      {/* Header Section */}
-      <View className="px-4 pt-8 pb-2 flex-row items-start">
-        {/* Text and Profile Image Container */}
-        <View className="flex-1">
-          {/* Conditional rendering of the first name */}
-          <Text className="text-3xl font-extrabold text-black">
-            Hey{' '}
-            <Text className="text-red-500 font-black">
-              {userData.firstName}
+    <ScrollView style={{flex: 1, backgroundColor: '#FFFFFF'}}>
+      {/* Header */}
+      <View style={{padding: 20, paddingBottom: 0}}>
+        <View style={{flexDirection: 'row', alignItems: 'center'}}>
+          <View style={{flex: 1}}>
+            <Text style={{fontSize: 26, fontWeight: 'bold', color: '#000'}}>
+              Hello <Text style={{color: '#E53935'}}>{userData.firstName}</Text>
+              ,
             </Text>
-          </Text>
-
-          {/* "Welcome Back to MyYoga" in grey */}
-          <Text className="text-base font-medium text-gray-500 mb-4">
-            Welcome Back to MyYoga
-          </Text>
-        </View>
-
-        {/* Profile image */}
-        {userData.profilePic ? (
-          <View
-            style={{
-              width: 40, // Increase size of circle
-              height: 40, // Increase size of circle
-              borderRadius: 25, // Half of width/height for a perfect circle
-              overflow: 'hidden',
-              justifyContent: 'center',
-              alignItems: 'center',
-              shadowColor: '#000', // Shadow color
-              shadowOffset: {width: 0, height: 4}, // Slight shadow offset to create elevation effect
-              shadowOpacity: 0.1, // Shadow opacity
-              shadowRadius: 6, // Shadow spread
-              elevation: 5, // For Android shadow
-            }}>
-            <Image
-              key={userData.profilePic} // Add a key based on the URL to force re-render on change
-              source={{uri: userData.profilePic}}
-              style={{width: '100%', height: '100%', borderRadius: 25}} // Ensuring the image is circular
-            />
+            <Text style={{fontSize: 16, color: '#757575'}}>
+              Welcome to MyYoga
+            </Text>
           </View>
-        ) : (
-          <Text>Profile</Text>
-        )}
+          {userData.profilePic ? (
+            <Image
+              source={{uri: userData.profilePic}}
+              style={{
+                width: 40,
+                height: 40,
+                borderRadius: 20,
+              }}
+            />
+          ) : (
+            <View
+              style={{
+                width: 40,
+                height: 40,
+                borderRadius: 20,
+                backgroundColor: '#E0E0E0',
+              }}
+            />
+          )}
+        </View>
+        {/* Calendar */}
+        <Calendar />
       </View>
 
-      {/* Body Section */}
-      <View className="px-4">
-        <Text className="text-[20px] font-bold self-start mb-5 text-black">
-          Discover the Best Yoga
-        </Text>
-        {yogaPoses.map(pose => (
+      <TouchableWithoutFeedback onPress={() => inputRef.current?.focus()}>
+        <View
+          style={{
+            flex: 1,
+            paddingHorizontal: 16,
+            flexDirection: 'row',
+            alignItems: 'center',
+            backgroundColor: '#F5F5F5',
+            paddingVertical: 5,
+            borderRadius: 20,
+            marginHorizontal: 20,
+            marginVertical: 20,
+          }}>
+          {/* Search Icon */}
+          <Icon
+            name="search"
+            size={24}
+            color="#888"
+            style={{marginRight: 10}}
+          />
+
+          {/* TextInput for Search */}
+          <TextInput
+            ref={inputRef}
+            placeholder="Search"
+            value={searchQuery}
+            onChangeText={setSearchQuery} // Update the search query
+            onFocus={() => setIsSearchActive(true)} // Set search to active when focused
+            onBlur={() => setIsSearchActive(false)}
+            style={{
+              fontSize: 16,
+              flex: 1, // Ensure it takes the remaining space
+            }}
+          />
+        </View>
+      </TouchableWithoutFeedback>
+
+      {/* Only show Featured and Choose a Specific Yoga if search is not active */}
+      {!isSearchActive && (
+        <View
+          style={{
+            flexDirection: 'row',
+            marginHorizontal: 20,
+            paddingHorizontal: 20,
+            backgroundColor: '#F8E2E1',
+
+            borderRadius: 20,
+          }}>
+          {/* Left Section for Title, Description, and Button */}
+          <View style={{flex: 1, justifyContent: 'center'}}>
+            <Text style={{color: '#000000', fontSize: 18, fontWeight: 'bold'}}>
+              Energy Morning
+            </Text>
+            <Text style={{color: '#000000', fontSize: 14}}>
+              Fix Your Whole Body Posture
+            </Text>
+            <TouchableOpacity
+              style={{
+                backgroundColor: '#ED706A',
+                paddingVertical: 15,
+                paddingHorizontal: 50, // Reduced padding for smaller button width
+                borderRadius: 15,
+                marginTop: 10,
+                alignSelf: 'flex-start', // Centers the button horizontally
+              }}>
+              <Text
+                style={{color: '#FFFFFF', fontSize: 12, textAlign: 'center'}}>
+                Start
+              </Text>
+            </TouchableOpacity>
+          </View>
+
+          {/* Right Section for Image */}
+          <Image
+            source={require('../assets/energy-morning.png')}
+            style={{
+              width: 130,
+              height: 130,
+              marginLeft: 20,
+              marginBottom: 20,
+            }}
+          />
+        </View>
+      )}
+
+      {/* Yoga Poses */}
+      <View style={{padding: 20}}>
+        {!isSearchActive && (
+          <Text style={{fontSize: 20, fontWeight: 'bold', marginBottom: 10}}>
+            Choose a Specific Yoga
+          </Text>
+        )}
+
+        {filteredPoses.map(pose => (
           <TouchableOpacity
             key={pose.id}
-            className="mb-5 rounded-3xl overflow-hidden"
+            style={{
+              marginBottom: 20,
+              borderRadius: 20,
+              overflow: 'hidden',
+              backgroundColor: '#F5F5F5',
+            }}
             onPress={() => navigation.navigate('PoseDetail', {pose})}>
             <ImageBackground
               source={pose.image}
-              className="h-52 justify-end px-3 py-4">
-              <Text className="text-white text-xl font-black">{pose.name}</Text>
-              <Text className="text-white text-sm font-bold">
+              style={{
+                height: 120,
+                justifyContent: 'flex-end',
+                padding: 20,
+              }}>
+              <Text style={{color: '#FFFFFF', fontSize: 18}}>{pose.name}</Text>
+              <Text style={{color: '#FFFFFF', fontSize: 14}}>
                 {pose.duration}
               </Text>
             </ImageBackground>
