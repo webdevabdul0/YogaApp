@@ -1,3 +1,4 @@
+/* eslint-disable react-native/no-inline-styles */
 import React, {useEffect, useState, useRef} from 'react';
 import {
   View,
@@ -12,15 +13,31 @@ import {
 import auth from '@react-native-firebase/auth';
 import firestore from '@react-native-firebase/firestore';
 import {HomeScreenProps} from '../navigation/StackParamList';
-import {useFocusEffect} from '@react-navigation/native';
-import {center} from '@shopify/react-native-skia';
+
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import Calendar from './components/Calender';
+
+const routines = [
+  {
+    title: 'Energy Morning',
+    description: 'Fix Your Whole Body Posture',
+    buttonText: 'Start',
+    imageSource: require('../assets/energy-morning.png'),
+  },
+  {
+    title: 'Night Routine',
+    description: 'Relax and Unwind Before Bed',
+    buttonText: 'Start',
+    imageSource: require('../assets/energy-morning.png'), // Replace with actual image
+  },
+  // Add more routines as needed
+];
 
 const yogaPoses = [
   {
     id: 1,
     name: 'Tree Pose',
+    tagLine: 'Fix Your Whole Body Posture.',
     duration: '2 minutes',
     image: require('../assets/tree-pose.png'),
     difficulty: 'Basic',
@@ -34,6 +51,7 @@ const yogaPoses = [
   {
     id: 2,
     name: 'Chair Pose',
+    tagLine: 'Build strength and stability with Chair Pose.',
     duration: '1 minute',
     image: require('../assets/chair-pose.png'),
     difficulty: 'Intermediate',
@@ -47,6 +65,7 @@ const yogaPoses = [
   {
     id: 3,
     name: 'Warrior II',
+    tagLine: 'Embrace strength and stability in Warrior II.',
     duration: '45 seconds',
     image: require('../assets/warrior-ii.png'),
     difficulty: 'Intermediate',
@@ -60,6 +79,7 @@ const yogaPoses = [
   {
     id: 4,
     name: 'Triangle Pose',
+    tagLine: 'Expand and energize with Triangle Pose.',
     duration: '45 seconds',
     image: require('../assets/triangle-pose.png'),
     difficulty: 'Basic',
@@ -195,56 +215,79 @@ const HomeScreen: React.FC<HomeScreenProps> = ({navigation, route}) => {
 
       {/* Only show Featured and Choose a Specific Yoga if search is not active */}
       {!isSearchActive && (
-        <View
-          style={{
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false} // Hide the horizontal scroll bar
+          contentContainerStyle={{
             flexDirection: 'row',
-            marginHorizontal: 20,
             paddingHorizontal: 20,
-            backgroundColor: '#F8E2E1',
-
-            borderRadius: 20,
           }}>
-          {/* Left Section for Title, Description, and Button */}
-          <View style={{flex: 1, justifyContent: 'center'}}>
-            <Text style={{color: '#000000', fontSize: 18, fontWeight: 'bold'}}>
-              Energy Morning
-            </Text>
-            <Text style={{color: '#000000', fontSize: 14}}>
-              Fix Your Whole Body Posture
-            </Text>
-            <TouchableOpacity
+          {routines.map((routine, index) => (
+            <View
+              key={index}
               style={{
-                backgroundColor: '#ED706A',
-                paddingVertical: 15,
-                paddingHorizontal: 50, // Reduced padding for smaller button width
-                borderRadius: 15,
-                marginTop: 10,
-                alignSelf: 'flex-start', // Centers the button horizontally
+                flexDirection: 'row',
+                marginHorizontal: 8,
+                paddingHorizontal: 20,
+                backgroundColor: '#F8E2E1',
+                borderRadius: 20,
+                width: 330, // Adjust width for each item
+                marginBottom: 20,
               }}>
-              <Text
-                style={{color: '#FFFFFF', fontSize: 12, textAlign: 'center'}}>
-                Start
-              </Text>
-            </TouchableOpacity>
-          </View>
+              {/* Left Section for Title, Description, and Button */}
+              <View style={{flex: 1, justifyContent: 'center'}}>
+                <Text
+                  style={{color: '#000000', fontSize: 18, fontWeight: 'bold'}}>
+                  {routine.title}
+                </Text>
+                <Text style={{color: '#000000', fontSize: 14}}>
+                  {routine.description}
+                </Text>
+                <TouchableOpacity
+                  style={{
+                    backgroundColor: '#ED706A',
+                    paddingVertical: 15,
+                    paddingHorizontal: 50, // Reduced padding for smaller button width
+                    borderRadius: 15,
+                    marginTop: 10,
+                    alignSelf: 'flex-start', // Centers the button horizontally
+                  }}>
+                  <Text
+                    style={{
+                      color: '#FFFFFF',
+                      fontSize: 12,
+                      textAlign: 'center',
+                    }}>
+                    {routine.buttonText}
+                  </Text>
+                </TouchableOpacity>
+              </View>
 
-          {/* Right Section for Image */}
-          <Image
-            source={require('../assets/energy-morning.png')}
-            style={{
-              width: 130,
-              height: 130,
-              marginLeft: 20,
-              marginBottom: 20,
-            }}
-          />
-        </View>
+              {/* Right Section for Image */}
+              <Image
+                source={routine.imageSource}
+                style={{
+                  width: 130,
+                  height: 130,
+                  marginLeft: 20,
+                  marginBottom: 20,
+                }}
+              />
+            </View>
+          ))}
+        </ScrollView>
       )}
 
       {/* Yoga Poses */}
       <View style={{padding: 20}}>
         {!isSearchActive && (
-          <Text style={{fontSize: 20, fontWeight: 'bold', marginBottom: 10}}>
+          <Text
+            style={{
+              fontSize: 20,
+              fontWeight: 'bold',
+              marginBottom: 15,
+              color: '#1A1A1A',
+            }}>
             Choose a Specific Yoga
           </Text>
         )}
@@ -252,8 +295,10 @@ const HomeScreen: React.FC<HomeScreenProps> = ({navigation, route}) => {
         {filteredPoses.map(pose => (
           <TouchableOpacity
             key={pose.id}
+            // eslint-disable-next-line react-native/no-inline-styles
             style={{
-              marginBottom: 20,
+              height: 160,
+              marginBottom: 15,
               borderRadius: 20,
               overflow: 'hidden',
               backgroundColor: '#F5F5F5',
@@ -262,14 +307,18 @@ const HomeScreen: React.FC<HomeScreenProps> = ({navigation, route}) => {
             <ImageBackground
               source={pose.image}
               style={{
-                height: 120,
+                height: 160,
                 justifyContent: 'flex-end',
-                padding: 20,
               }}>
-              <Text style={{color: '#FFFFFF', fontSize: 18}}>{pose.name}</Text>
-              <Text style={{color: '#FFFFFF', fontSize: 14}}>
-                {pose.duration}
-              </Text>
+              <View style={{padding: 20}}>
+                <Text
+                  style={{color: '#FFFFFF', fontSize: 18, fontWeight: '600'}}>
+                  {pose.name}
+                </Text>
+                <Text style={{color: '#FFFFFF', fontSize: 14}}>
+                  {pose.tagLine}
+                </Text>
+              </View>
             </ImageBackground>
           </TouchableOpacity>
         ))}

@@ -35,6 +35,17 @@ export type StackParamList = {
   };
   SettingsScreen: {refresh?: boolean};
   Notifications: undefined;
+  EducationScreen: undefined;
+  ContentScreen: {
+    Post: {
+      id: number;
+      title: string;
+      body: string;
+      imageSource: any;
+      fullBody: string;
+      tagline: string;
+    };
+  };
   Appearance: undefined;
   Language: undefined;
   Privacy: undefined;
@@ -125,4 +136,12 @@ export type PrivacyScreenProps = {
 
 export type EditProfileScreenProps = {
   navigation: NativeStackNavigationProp<StackParamList, 'EditProfile'>;
+};
+
+export type EducationScreenProps = {
+  navigation: NativeStackNavigationProp<StackParamList, 'EducationScreen'>;
+};
+
+export type ContentScreenProps = {
+  navigation: NativeStackNavigationProp<StackParamList, 'ContentScreen'>;
 };
