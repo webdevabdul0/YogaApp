@@ -32,6 +32,8 @@ import {
 } from '../postureUtils';
 import {CameraScreenProps} from '../navigation/StackParamList';
 import Ionicons from 'react-native-vector-icons/Ionicons'; // Import icon library
+import firestore from '@react-native-firebase/firestore';
+import auth from '@react-native-firebase/auth';
 
 export const CameraStream: React.FC<CameraScreenProps> = ({
   navigation,
@@ -96,12 +98,86 @@ export const CameraStream: React.FC<CameraScreenProps> = ({
   const {pose} = route.params;
   const targetPose = pose.name;
 
-  const handleEndSession = () => {
-    navigation.navigate('PoseDetail', {pose});
-    // Add logic for ending session, such as navigating back or clearing state
+  const handleEndSession = async () => {
+    try {
+      // Mark session attendance in Firestore
+      const user = auth().currentUser;
+      if (!user) {
+        console.log('User not logged in');
+        return; // Handle case when user is not logged in
+      }
+
+      const userId = user.uid; // Get the current user ID
+      const sessionDate = new Date(); // Current date and time
+      const sessionDay = sessionDate.getDay(); // Day of the week (0 = Sunday, 1 = Monday, ..., 6 = Saturday)
+      const todayDate = sessionDate.toISOString().split('T')[0]; // YYYY-MM-DD format
+
+      // Get the user's Firestore document
+      const userDoc = await firestore().collection('users').doc(userId).get();
+      if (!userDoc.exists) {
+        console.error('User document does not exist.');
+        return;
+      }
+
+      const userData = userDoc.data();
+      const currentStreak = userData?.streak || 0;
+      const lastSessionDate = userData?.lastSessionDate;
+      let sessionDays = userData?.sessionDays || [
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+      ]; // Initialize sessionDays if not present
+
+      let newStreak = currentStreak;
+
+      console.log('Session Days are as follow', sessionDays);
+      // Log to see if lastSessionDate is correctly fetched
+      console.log('Last session date:', lastSessionDate);
+
+      // Check if the user attended today and if streak should be incremented
+      if (lastSessionDate !== todayDate) {
+        // Increment streak or reset based on last session date
+        if (lastSessionDate) {
+          const lastDate = new Date(lastSessionDate);
+          const dayDiff = (sessionDate - lastDate) / (1000 * 3600 * 24); // Day difference
+
+          console.log('Day difference:', dayDiff);
+
+          if (dayDiff === 1) {
+            newStreak = currentStreak + 1;
+          } else if (dayDiff > 1) {
+            newStreak = 1; // Restart streak if more than 1 day gap
+          }
+        } else {
+          newStreak = 1; // First session
+        }
+
+        // Mark the current day as attended
+        sessionDays[sessionDay] = true; // Mark the corresponding day as attended
+
+        // Update streak and sessionDays in Firestore
+        await firestore().collection('users').doc(userId).update({
+          streak: newStreak,
+          lastSessionDate: todayDate,
+          sessionDays: sessionDays, // Store updated days attended
+        });
+
+        console.log('Streak updated:', newStreak);
+        console.log('Session Days:', sessionDays);
+      }
+
+      // Proceed to session details page or other necessary actions
+      navigation.navigate('PoseDetail', {pose});
+    } catch (error) {
+      console.error('Error handling session:', error);
+    }
   };
 
-  const [timer, setTimer] = React.useState(120); // 2 minutes in seconds
+  const [timer, setTimer] = React.useState(10); // 2 minutes in seconds
   const [timerActive, setTimerActive] = React.useState(false); // Initially the timer is not active
 
   React.useEffect(() => {

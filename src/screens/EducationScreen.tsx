@@ -1,4 +1,4 @@
-import React, {useState, useRef} from 'react';
+import React, {useState, useEffect, useRef} from 'react';
 import {
   View,
   Text,
@@ -10,21 +10,59 @@ import {
   TouchableWithoutFeedback,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
+import axios from 'axios';
 import {EducationScreenProps} from '../navigation/StackParamList';
 
 const EducationScreen: React.FC<EducationScreenProps> = ({navigation}) => {
   const [searchQuery, setSearchQuery] = useState('');
+  const [news, setNews] = useState<any[]>([]); // State to hold fetched news
   const inputRef = useRef<TextInput>(null);
-  const [, setIsSearchActive] = useState(false); // Track if search is active
+  const [, setIsSearchActive] = useState(false);
+
+  // Fetch news articles from the API
+  const fetchNews = async (query: string) => {
+    try {
+      const response = await axios.get('https://newsapi.org/v2/everything', {
+        params: {
+          q: query, // Search query
+          apiKey: '8224b6169c724a1682e7116df282a487', // Replace with your API key
+          searchIn: 'title,content', // Search in both title and content
+          sortBy: 'relevancy', // Sort by relevancy
+          pageSize: 10, // Number of articles per page
+        },
+      });
+      setNews(response.data.articles);
+    } catch (error) {
+      console.error('Error fetching news:', error);
+    }
+  };
+
+  useEffect(() => {
+    fetchNews('yoga-pose'); // Fetch yoga-related news when the component mounts
+  }, []);
+
   const posts = [
     {
       id: 1,
-      title: 'How Yoga Changed My Life',
-      body: 'Yoga has helped me reduce stress and improve flexibility. I started with simple poses every morning.',
+      title: 'Introduction to MY YOGA Application',
+      body: 'MY YOGA uses advanced technology to detect yoga postures and offer real-time feedback. The app helps improve your practice by guiding you through accurate body alignment and posture correction.',
       fullBody:
-        'I was going through a stressful phase in my life and found it hard to stay focused and positive. After incorporating yoga into my daily routine, I started noticing a difference in how I felt both mentally and physically. The breathing exercises helped calm my mind, and the stretching increased my flexibility, making me feel more energized throughout the day. Yoga has truly transformed my life, and I’m now more present and at peace with myself.',
+        'Incorporating technology into yoga, MY YOGA offers real-time feedback on your poses using a computer vision-based Yoga Posture Detection System. The system utilizes the  Mediapipe  library for accurate body keypoint detection, skeletonizing the human body to evaluate joint angles, body alignment, and movement patterns.\n\n' +
+        'The Yoga Posture Detection System works by capturing images of the user performing various yoga poses using a camera or device. These images are then analyzed by the app, which uses the skeletonized data to assess the position of key body joints. The app evaluates whether your posture is correct and provides immediate feedback on how to adjust. Whether you’re performing basic poses like Downward Dog or more complex poses like Warrior II, MY YOGA offers real-time corrections to help you improve.\n\n' +
+        ' How It Works: \n\n' +
+        '1.  Pose Detection:  Using the Mediapipe library, the app captures and identifies the key points of your body as you move through different poses. This includes critical joints such as the elbows, shoulders, knees, and hips.\n' +
+        '2.  Real-Time Feedback:  Once your pose is captured, MY YOGA immediately evaluates the alignment and provides specific feedback on how to adjust your posture. This can be anything from aligning your spine correctly to adjusting the angle of your hips.\n' +
+        '3.  Corrective Suggestions:  If any misalignment is detected, the app gives specific suggestions on how to correct it. The feedback may include visual indicators or instructions to guide you into the correct position.\n\n' +
+        'This system is designed to be used in a private setting, making it ideal for home practice. Whether you are just starting or looking to refine your skills, MY YOGA helps you practice with the guidance of a virtual instructor, without the need for a physical class.\n\n' +
+        ' Benefits of Using MY YOGA: \n\n' +
+        '-  Injury Prevention:  By receiving immediate feedback on your posture, you can prevent injuries caused by incorrect alignment.\n' +
+        '-  Improved Flexibility:  The app helps you perform stretches correctly, improving your flexibility over time.\n' +
+        '-  Personalized Guidance:  Every user is unique, and MY YOGA adapts its feedback based on your personal body movements.\n' +
+        '-  Consistent Progress:  With real-time corrections, you can track your improvement and fine-tune your practice.\n\n' +
+        'MY YOGA aims to not only guide you in each posture but also to provide a better understanding of the principles behind yoga poses, fostering a deeper connection with your practice.\n\n' +
+        'Whether you are practicing yoga for the first time or you are an experienced practitioner, MY YOGA is your companion for a safer, more effective yoga experience.',
       tagline:
-        'Yoga has transformed my life by reducing stress and improving flexibility.',
+        'MY YOGA offers real-time feedback on yoga poses to improve posture, flexibility, and overall practice effectiveness.',
       imageSource: require('../assets/yoga-image-1.png'),
     },
     {
@@ -32,7 +70,11 @@ const EducationScreen: React.FC<EducationScreenProps> = ({navigation}) => {
       title: 'Best Yoga Poses for Beginners',
       body: 'If you are just starting yoga, these poses can help you build strength and flexibility over time.',
       fullBody:
-        'Starting yoga can feel overwhelming, especially with so many different poses and styles. But you don’t need to worry about advanced poses right away. Begin with simple poses like Downward Dog, Child’s Pose, and Mountain Pose. These help you build foundational strength and flexibility. As you grow more confident, you can add more challenging poses to your routine. With regular practice, yoga will start feeling more natural, and you’ll begin to see improvement in both mind and body.',
+        'Starting yoga can feel overwhelming, especially with so many different poses and styles. But you don’t need to worry about advanced poses right away. Begin with simple poses like Downward Dog, Child’s Pose, and Mountain Pose. These foundational poses are key to building strength, flexibility, and a solid mind-body connection.\n\n' +
+        '•  Downward Dog : This pose helps lengthen the spine, stretch the hamstrings, and strengthen the arms and legs. It’s a great way to build core stability and improve overall flexibility.\n\n' +
+        '•  Child’s Pose : A gentle resting pose that calms the mind, stretches the back, and promotes deep relaxation. It’s perfect for taking breaks between other poses.\n\n' +
+        '•  Mountain Pose : While it looks simple, Mountain Pose helps you focus on posture and alignment. It teaches you to stand tall and engage your body properly.\n\n' +
+        'As you grow more confident, you can add more challenging poses to your routine, such as Warrior Poses or Tree Pose. Yoga is about progress, not perfection. With regular practice, yoga will start feeling more natural, and you’ll begin to see improvements in both mind and body. Remember to listen to your body and take it one step at a time!',
       tagline:
         'Start with simple poses to build strength and flexibility over time.',
       imageSource: require('../assets/yoga-image-2.png'),
@@ -42,98 +84,21 @@ const EducationScreen: React.FC<EducationScreenProps> = ({navigation}) => {
       title: 'Yoga for Better Sleep',
       body: 'I tried some relaxation poses before bed, and my sleep quality improved significantly.',
       fullBody:
-        'Quality sleep is vital for overall well-being, but it can be difficult to achieve with a busy mind. I started incorporating some relaxation-focused yoga poses like Forward Fold and Legs Up the Wall into my nighttime routine, and the results have been amazing. These poses calm the nervous system and promote relaxation, which makes it easier to fall asleep and stay asleep through the night. Now, I wake up feeling refreshed and energized every day.',
+        'Quality sleep is vital for overall well-being, but it can be difficult to achieve with a busy mind. Incorporating yoga into my nighttime routine has drastically improved the quality of my sleep. I began practicing a few relaxation-focused poses to calm my mind and prepare my body for rest.\n\n' +
+        '•  Forward Fold : This gentle stretch targets the lower back and hamstrings, encouraging relaxation by calming the nervous system. It also helps release tension built up throughout the day.\n\n' +
+        '•  Legs Up the Wall : This restorative pose promotes circulation and relaxation by encouraging the flow of blood back to the heart. It’s incredibly calming and a great way to wind down before bed.\n\n' +
+        '•  Reclining Butterfly Pose : With the soles of your feet together and knees out to the sides, this pose helps open up the hips and relaxes the lower body. It’s perfect for easing tension and calming the mind.\n\n' +
+        'These poses help relieve stress and anxiety, promoting deep relaxation and preparing the body for sleep. The more I practiced these poses, the easier it became to fall asleep and stay asleep throughout the night. I wake up feeling more refreshed and energized every day, ready to start a new one.',
       tagline:
         'Relaxing yoga poses can improve sleep quality and help you rest better.',
       imageSource: require('../assets/yoga-image-3.png'),
     },
-    {
-      id: 4,
-      title: 'Yoga for Core Strength',
-      body: 'Engage your core and build strength with these targeted poses.',
-      fullBody:
-        'Having a strong core is essential for balance, stability, and overall health. Yoga offers a variety of poses that target the core muscles, such as Boat Pose, Plank Pose, and Dolphin Pose. These poses engage your abdominal muscles and help build strength over time. Regular practice will not only improve your core strength but also enhance your posture, which can reduce back pain and improve your overall sense of well-being.',
-      tagline:
-        'Build a stronger core and improve your stability with yoga poses.',
-      imageSource: require('../assets/yoga-image-3.png'),
-    },
-    {
-      id: 5,
-      title: 'Yoga for Anxiety Relief',
-      body: 'These poses help calm the mind and alleviate feelings of anxiety.',
-      fullBody:
-        'Anxiety can be overwhelming, but yoga offers a powerful tool to manage it. Certain poses, like Child’s Pose, Cat-Cow, and Savasana, can activate the parasympathetic nervous system, helping the body relax and reducing feelings of anxiety. Deep breathing, combined with these poses, can ground you in the present moment and calm the mind. Over time, yoga can help you develop a stronger sense of self-awareness, making it easier to manage anxious thoughts when they arise.',
-      tagline: 'Calm your mind and reduce anxiety with relaxing yoga poses.',
-      imageSource: require('../assets/yoga-image-2.png'),
-    },
-    {
-      id: 6,
-      title: 'How to Build a Daily Yoga Routine',
-      body: 'Consistency is key! Learn how to structure a daily practice to see maximum benefits.',
-      fullBody:
-        'Building a consistent yoga routine doesn’t have to be intimidating. Start by dedicating just 15-20 minutes a day to practice. Focus on a few key poses that target different areas of the body—such as Sun Salutations for warming up, Warrior poses for strength, and Forward Fold for flexibility. Over time, you can increase the duration and variety of your practice. The key is consistency, so even if you have a busy schedule, try to set aside time each day for yoga. Soon, it will become a natural part of your day.',
-      tagline:
-        'Dedicate just 15-20 minutes a day to see lasting benefits from yoga.',
-      imageSource: require('../assets/yoga-image-1.png'),
-    },
-    {
-      id: 7,
-      title: 'Yoga Poses for Better Posture',
-      body: 'Work on your alignment and posture with these simple yoga poses.',
-      fullBody:
-        'Good posture is not only about standing up straight—it’s about alignment and balance in the body. Yoga offers several poses that help improve posture by lengthening the spine and strengthening the muscles that support it. Poses like Mountain Pose, Cat-Cow, and Cobra Pose help promote good spinal alignment, which can reduce neck, shoulder, and back pain. By incorporating these poses into your routine, you can improve your posture and feel more confident and grounded.',
-      tagline: 'Improve posture and reduce pain with yoga poses for alignment.',
-      imageSource: require('../assets/yoga-image-3.png'),
-    },
-    {
-      id: 8,
-      title: 'The Benefits of Sun Salutations',
-      body: 'A great warm-up sequence to start your yoga practice and boost energy.',
-      fullBody:
-        'Sun Salutations, or Surya Namaskar, is a sequence of poses that flows together to warm up the body and boost energy. This sequence stretches and strengthens nearly every muscle group, making it an excellent way to start your yoga practice. It also helps improve flexibility, circulation, and mental focus. As you move through the sequence, focus on syncing your breath with the movements to create a meditative, mindful experience. Over time, regular Sun Salutations can enhance your overall yoga practice.',
-      tagline:
-        'Sun Salutations warm up the body, improve flexibility, and boost energy.',
-      imageSource: require('../assets/yoga-image-2.png'),
-    },
-    {
-      id: 9,
-      title: 'Yoga for Mental Clarity',
-      body: 'Clear your mind and sharpen your focus with these yoga techniques.',
-      fullBody:
-        'Yoga is not just about physical poses—it’s also a powerful tool for mental clarity. Poses like Tree Pose and Warrior III help improve focus, balance, and concentration. In addition, incorporating meditation and pranayama (breathing techniques) into your practice can further enhance mental clarity by calming the mind and reducing mental clutter. A regular yoga practice trains the mind to stay present, which can sharpen focus and improve decision-making in daily life.',
-      tagline:
-        'Sharpen your focus and clear your mind with yoga and meditation.',
-      imageSource: require('../assets/yoga-image-1.png'),
-    },
-    {
-      id: 10,
-      title: 'Partner Yoga for Connection',
-      body: 'Explore connection and communication through partner yoga poses.',
-      fullBody:
-        'Partner yoga is a fun and intimate way to deepen your yoga practice with someone else. It encourages communication, trust, and cooperation as you move through poses together. Partner poses such as Double Downward Dog and Partner Forward Fold allow you to support each other while building strength and flexibility. It’s also a great way to bond with a friend, partner, or family member, as it fosters connection and mutual support.',
-      tagline: 'Build trust and connection through partner yoga poses.',
-      imageSource: require('../assets/yoga-image-3.png'),
-    },
-    {
-      id: 11,
-      title: 'Yoga for Runners',
-      body: 'Enhance flexibility and prevent injury with these yoga poses for runners.',
-      fullBody:
-        'Runners often experience tight muscles and joint strain from repetitive motion. Yoga offers an effective way to prevent injury and enhance flexibility. Poses like Downward Dog, Pigeon Pose, and Forward Fold stretch and lengthen the muscles, relieving tightness and improving mobility. Incorporating yoga into your running routine can help prevent common injuries like IT band syndrome and runner’s knee, while also promoting faster recovery after long runs.',
-      tagline:
-        'Stretch, recover, and prevent injury with yoga poses for runners.',
-      imageSource: require('../assets/yoga-image-2.png'),
-    },
-    {
-      id: 12,
-      title: 'Yoga for Strength and Toning',
-      body: 'Build muscle tone and increase strength with these yoga poses.',
-      fullBody:
-        'Yoga can be a full-body workout, helping to build muscle strength and tone the body. Poses like Plank, Chaturanga, and Warrior I engage the muscles, helping to increase strength over time. The beauty of yoga for strength training is that it uses your own body weight to build muscle, so no equipment is required. Regular practice helps tone the arms, legs, and core while also improving flexibility and posture.',
-      tagline: 'Build muscle and tone your body with yoga poses.',
-      imageSource: require('../assets/yoga-image-1.png'),
-    },
   ];
+
+  const handleSearch = (query: string) => {
+    setSearchQuery(query);
+    fetchNews(query); // Fetch filtered news based on search query
+  };
 
   return (
     <ScrollView style={styles.container}>
@@ -141,7 +106,6 @@ const EducationScreen: React.FC<EducationScreenProps> = ({navigation}) => {
         <Text style={styles.headerText}>
           My<Text style={styles.headerTextRed}>Yoga</Text>
         </Text>
-
         <Icon
           name="notifications"
           size={24}
@@ -163,8 +127,8 @@ const EducationScreen: React.FC<EducationScreenProps> = ({navigation}) => {
             ref={inputRef}
             placeholder="Search Yoga Topics"
             value={searchQuery}
-            onChangeText={setSearchQuery} // Update the search query
-            onFocus={() => setIsSearchActive(true)} // Set search to active when focused
+            onChangeText={handleSearch} // Trigger search on text change
+            onFocus={() => setIsSearchActive(true)}
             onBlur={() => setIsSearchActive(false)}
             style={styles.searchInput}
           />
@@ -183,7 +147,16 @@ const EducationScreen: React.FC<EducationScreenProps> = ({navigation}) => {
               key={index}
               style={styles.featuredCard}
               onPress={() =>
-                navigation.navigate('ContentScreen', {Post: article})
+                navigation.navigate('FeaturedContentScreen', {
+                  Post: {
+                    id: article.id, // Assuming you have an id in article
+                    title: article.title,
+                    body: article.body, // Assuming you have a short body in article
+                    imageSource: article.imageSource, // Assuming image source is in article
+                    fullBody: article.fullBody, // Full body content for the ContentScreen
+                    tagline: article.tagline, // Assuming you have a tagline in article
+                  },
+                })
               }>
               <Image
                 source={article.imageSource}
@@ -191,7 +164,11 @@ const EducationScreen: React.FC<EducationScreenProps> = ({navigation}) => {
               />
               <View style={styles.featuredTextContainer}>
                 <Text style={styles.featuredTitle}>{article.title}</Text>
-                <Text style={styles.featuredDescription}>
+
+                <Text
+                  style={styles.featuredDescription}
+                  numberOfLines={2}
+                  ellipsizeMode="tail">
                   {article.tagline}
                 </Text>
               </View>
@@ -200,19 +177,78 @@ const EducationScreen: React.FC<EducationScreenProps> = ({navigation}) => {
         </ScrollView>
       </View>
 
+      {/* News Section */}
       <View style={styles.contentSection}>
         <Text style={styles.sectionTitle}>Yoga Related Articles</Text>
-        {posts.map(post => (
-          <View key={post.id} style={styles.postCard}>
-            <View style={styles.postContent}>
-              <Image source={post.imageSource} style={styles.postImage} />
-              <View style={styles.postTextContainer}>
-                <Text style={styles.postTitle}>{post.title}</Text>
-                <Text style={styles.postBody}>{post.tagline}</Text>
-              </View>
-            </View>
-          </View>
-        ))}
+
+        {news.length > 0 ? (
+          news
+            .filter(newsItem => newsItem.urlToImage) // Only display news with images
+            .map((newsItem, index) => (
+              <TouchableOpacity
+                key={index}
+                onPress={() =>
+                  navigation.navigate('ContentScreen', {
+                    Post: {
+                      id: newsItem.id, // Ensure `id` exists in the newsItem
+                      title: newsItem.title,
+                      description: newsItem.description, // Short description
+                      content: newsItem.content, // Full content of the article
+                      publishedAt: newsItem.publishedAt, // Date of publication
+                      author: newsItem.author, // Author of the article
+                      urlToImage: newsItem.urlToImage, // Image URL
+                      url: newsItem.url, // Full article URL
+                      source: {
+                        name: newsItem.source.name, // Source name (publisher)
+                      },
+                      imageSource: newsItem.urlToImage, // Image source URL (used for Image component)
+                      fullBody: newsItem.content, // Full content of the article
+                      tagline: newsItem.description, // Short tagline
+                    },
+                  })
+                }>
+                <View className="bg-white p-2 rounded-lg shadow-md mb-2">
+                  {/* Container for image and text content */}
+                  <View className="flex-col items-start">
+                    {newsItem.urlToImage && (
+                      <Image
+                        source={{uri: newsItem.urlToImage}}
+                        className="w-full h-32 rounded-lg mb-2" // Reduced image size
+                      />
+                    )}
+                    <View className="flex-1">
+                      <Text className="text-md mb-3 font-semibold text-gray-800">
+                        {newsItem.title}
+                      </Text>
+                      <Text
+                        className="text-sm text-gray-600"
+                        numberOfLines={2}
+                        ellipsizeMode="tail">
+                        {newsItem.description}
+                      </Text>
+
+                      {/* Date Section */}
+                      <View className="flex-row items-center mt-2">
+                        <Icon
+                          name="calendar-today"
+                          size={16}
+                          color="#ED706A"
+                          className="mr-1"
+                        />
+                        <Text className="text-xs text-gray-600">
+                          {new Date(
+                            newsItem.publishedAt,
+                          ).toLocaleDateString() || 'No date'}
+                        </Text>
+                      </View>
+                    </View>
+                  </View>
+                </View>
+              </TouchableOpacity>
+            ))
+        ) : (
+          <Text>No news available.</Text>
+        )}
       </View>
     </ScrollView>
   );
@@ -243,7 +279,7 @@ const styles = StyleSheet.create({
     right: 0,
     top: 0,
     marginTop: 5,
-    color: '#898989', // Light gray color
+    color: '#898989',
   },
 
   searchBarContainer: {
@@ -254,7 +290,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#F5F5F5',
     paddingVertical: 5,
     borderRadius: 20,
-    marginHorizontal: 0,
     marginBottom: 15,
   },
   searchIcon: {
@@ -262,8 +297,9 @@ const styles = StyleSheet.create({
   },
   searchInput: {
     fontSize: 16,
-    flex: 1, // Ensure it takes the remaining space
+    flex: 1,
   },
+
   featuredSection: {
     marginBottom: 20,
   },
@@ -308,7 +344,6 @@ const styles = StyleSheet.create({
     color: '#848484',
   },
 
-  // New Post Style with Image on the left
   contentSection: {
     marginBottom: 30,
   },
@@ -317,13 +352,12 @@ const styles = StyleSheet.create({
     padding: 12,
     borderRadius: 15,
     marginBottom: 15,
-    shadowColor: '#999', // Light gray shadow color for iOS
-    shadowOffset: {width: 0, height: 4}, // Slightly softer vertical spread
-    shadowOpacity: 0.1, // Soft opacity for iOS
-    shadowRadius: 10, // Smaller radius for a more defined shadow on iOS
-    elevation: 5, // Lower elevation to make shadow less prominent on Android
+    shadowColor: '#999',
+    shadowOffset: {width: 0, height: 4},
+    shadowOpacity: 0.1,
+    shadowRadius: 10,
+    elevation: 5,
   },
-
   postContent: {
     flexDirection: 'row',
     alignItems: 'flex-start',
@@ -331,7 +365,7 @@ const styles = StyleSheet.create({
   postImage: {
     width: 80,
     height: 80,
-    borderRadius: 10, // Rounded image
+    borderRadius: 10,
     marginRight: 15,
   },
   postTextContainer: {

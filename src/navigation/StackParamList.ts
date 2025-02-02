@@ -35,8 +35,27 @@ export type StackParamList = {
   };
   SettingsScreen: {refresh?: boolean};
   Notifications: undefined;
+  ProfileScreen: undefined;
   EducationScreen: undefined;
   ContentScreen: {
+    Post: {
+      id: string; // Assuming the ID is a string from the API
+      title: string;
+      description: string;
+      content: string; // Full article body/content
+      publishedAt: string; // ISO Date string
+      author: string | null; // Author name or null
+      urlToImage: string | null; // Image URL, can be null if not available
+      url: string; // URL to the full article
+      source: {
+        name: string; // Name of the source/publisher
+      };
+      imageSource: string; // Image URL for local handling (if needed)
+      fullBody: string; // Full content of the article
+      tagline: string; // Short summary or tagline of the article
+    };
+  };
+  FeaturedContentScreen: {
     Post: {
       id: number;
       title: string;
@@ -51,6 +70,7 @@ export type StackParamList = {
   Privacy: undefined;
   EditProfile: undefined;
   CameraSettings: undefined;
+  CameraSettingsScreen: undefined;
   PoseDetail: {
     pose: {
       id: number; // Unique identifier for the pose
@@ -89,9 +109,7 @@ export type ForgotPasswordScreenProps = {
   navigation: NativeStackNavigationProp<StackParamList, 'ForgotPassword'>;
 };
 
-export type ProfileScreenProps = {
-  navigation: NativeStackNavigationProp<StackParamList, 'Profile'>;
-};
+// Removed duplicate ProfileScreenProps definition
 
 export type HomeScreenProps = {
   navigation: NativeStackNavigationProp<StackParamList, 'Main'>;
@@ -144,4 +162,16 @@ export type EducationScreenProps = {
 
 export type ContentScreenProps = {
   navigation: NativeStackNavigationProp<StackParamList, 'ContentScreen'>;
+};
+export type FeaturedContentScreenProps = {
+  navigation: NativeStackNavigationProp<
+    StackParamList,
+    'FeaturedContentScreen'
+  >;
+};
+export type ProfileScreenProps = {
+  navigation: NativeStackNavigationProp<StackParamList, 'ProfileScreen'>;
+};
+export type CameraSettingsScreenProps = {
+  navigation: NativeStackNavigationProp<StackParamList, 'CameraSettingsScreen'>;
 };

@@ -11,7 +11,6 @@ import TabNavigator from './navigation/TabNavigator';
 import type {AppSettings} from './app-settings';
 import {SettingsContext} from './app-settings';
 import {Delegate} from 'react-native-mediapipe';
-import {CameraStream} from './screens/CameraStream';
 const Stack = createNativeStackNavigator();
 import PushNotification from 'react-native-push-notification';
 

@@ -59,14 +59,6 @@ const PoseDetailScreen: React.FC<PoseDetailScreenProps> = ({
     setModalVisible(false);
   };
 
-  {
-    /*
-
-  const handleOutsidePress = () => {
-    setModalVisible(false);
-  };*/
-  }
-
   const toggleModal = () => {
     setModalVisible(!isModalVisible);
   };

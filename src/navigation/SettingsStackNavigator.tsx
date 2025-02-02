@@ -7,6 +7,7 @@ import AppearanceScreen from '../screens/SettingsScreens/AppearanceScreen';
 import LanguageScreen from '../screens/SettingsScreens/LanguageScreen';
 import PrivacyScreen from '../screens/SettingsScreens/PrivacyScreen';
 import EditProfile from '../screens/SettingsScreens/EditProfile';
+import CameraSettingsScreen from '../screens/SettingsScreens/CameraSettings';
 
 // Define the stack with StackParamList
 const Stack = createNativeStackNavigator<StackParamList>();
@@ -15,6 +16,10 @@ const SettingsStackNavigator = () => {
   return (
     <Stack.Navigator screenOptions={{headerShown: false}}>
       <Stack.Screen name="SettingsScreen" component={SettingsScreen} />
+      <Stack.Screen
+        name="CameraSettingsScreen"
+        component={CameraSettingsScreen}
+      />
       <Stack.Screen name="EditProfile" component={EditProfile} />
       <Stack.Screen name="Notifications" component={NotificationsScreen} />
       <Stack.Screen name="Appearance" component={AppearanceScreen} />

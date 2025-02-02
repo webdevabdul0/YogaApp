@@ -1,6 +1,8 @@
-import React, {useState} from 'react';
+import React, {useState, useEffect} from 'react';
 import {View, Text} from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome'; // Use FontAwesome icons
+import firestore from '@react-native-firebase/firestore'; // Assuming Firebase Firestore is used
+import auth from '@react-native-firebase/auth'; // Assuming Firebase Auth is used
 
 const Calendar = () => {
   // Define the days of the week (Sunday to Saturday)
@@ -9,27 +11,55 @@ const Calendar = () => {
   // Get the current date and weekday
   const currentDate = new Date();
   const currentDayOfWeek = currentDate.getDay(); // Sunday = 0, Monday = 1, etc.
-  const currentDayOfMonth = currentDate.getDate(); // Current day of the month
 
-  // Randomly assign ember (for true) or cross (for false) icons for each day
-  const [iconStates, setIconStates] = useState([
-    true,
+  // State for session days (fetched from Firestore)
+  const [sessionDays, setSessionDays] = useState([
+    false, // Initial value (false means not attended)
     false,
-    true,
     false,
-    true,
     false,
-    true,
-  ]); // true = ember, false = cross
+    false,
+    false,
+    false,
+  ]);
 
-  // Function to display the date of each day (wraps around if exceeds 31)
-  const getDisplayedDate = (index: number) => {
-    const date = currentDayOfMonth + index;
-    return date > 31 ? date - 31 : date;
-  };
+  // Fetch session days from Firestore
+  useEffect(() => {
+    const fetchSessionDays = async () => {
+      const user = auth().currentUser;
+      if (!user) {
+        console.log('User not logged in');
+        return; // Handle case when user is not logged in
+      }
+
+      const userId = user.uid; // Get the current user ID
+
+      console.log('User Id is ', userId);
+      try {
+        const userDoc = await firestore().collection('users').doc(userId).get();
+        if (userDoc.exists) {
+          const userData = userDoc.data();
+          const userSessionDays = userData?.sessionDays || [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+          ];
+          setSessionDays(userSessionDays); // Update sessionDays with the fetched data
+        }
+      } catch (error) {
+        console.error('Error fetching session days:', error);
+      }
+    };
+
+    fetchSessionDays();
+  }, []);
 
   // Calculate the highlighted day
-  const getHighlightedDayIndex = (currentDayOfWeek: number) => {
+  const getHighlightedDayIndex = currentDayOfWeek => {
     // The highlighted day is always today's day
     return currentDayOfWeek; // This maps to the correct index in the daysOfWeek array
   };
@@ -39,8 +69,6 @@ const Calendar = () => {
   return (
     <View style={{flexDirection: 'row', marginTop: 20}}>
       {daysOfWeek.map((day, index) => {
-        // Determine if the current day is the one being iterated
-        const dayNumber = getDisplayedDate(index);
         const isToday = index === highlightedDayIndex; // Highlight the correct day
 
         return (
@@ -56,26 +84,20 @@ const Calendar = () => {
             }}>
             {/* Ember or Cross icon above the day */}
             <Icon
-              name={iconStates[index] ? 'check' : 'close'} // Ember = 'fire', Cross = 'cancel'
+              name={sessionDays[index] ? 'check' : 'close'} // Ember = 'check', Cross = 'close'
               size={12}
-              color={iconStates[index] ? 'green' : 'red'}
+              color={sessionDays[index] ? 'green' : 'red'}
               style={{marginBottom: 5}}
             />
 
             {/* Day text */}
-            <Text
-              style={{color: isToday ? '#E53935' : '#757575', fontSize: 10}}>
-              {day}
-            </Text>
-
-            {/* Date */}
             <Text
               style={{
                 color: isToday ? '#E53935' : '#757575',
                 fontSize: 14,
                 fontWeight: 'bold',
               }}>
-              {dayNumber}
+              {day}
             </Text>
           </View>
         );

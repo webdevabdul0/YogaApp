@@ -159,6 +159,7 @@ const SettingsScreen: React.FC<SettingsScreenProps> = ({route, navigation}) => {
   };
 
   const menuItems = [
+    {label: 'Camera Settings', screen: 'CameraSettingsScreen'},
     {label: 'Notifications', screen: 'Notifications'},
     {label: 'Appearance', screen: 'Appearance'},
     {label: 'Language', screen: 'Language'},
@@ -295,6 +296,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
+
   headerText: {
     textAlign: 'center',
     fontSize: 20,

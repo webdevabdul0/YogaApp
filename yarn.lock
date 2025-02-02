@@ -3531,9 +3531,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@shopify/react-native-skia@npm:^1.5.1":
-  version: 1.5.1
-  resolution: "@shopify/react-native-skia@npm:1.5.1"
+"@shopify/react-native-skia@npm:^1.11.3":
+  version: 1.11.3
+  resolution: "@shopify/react-native-skia@npm:1.11.3"
   dependencies:
     canvaskit-wasm: 0.39.1
     react-reconciler: 0.27.0
@@ -3548,7 +3548,7 @@ __metadata:
       optional: true
   bin:
     setup-skia-web: ./scripts/setup-canvaskit.js
-  checksum: 6062bf116295a441117f10b7d0aa8e3bffd47e91b394665dff100272da0627966b31ed73d9417cb6ccfaa9cf575372c27f9e70203278429cfd33b63cdccea646
+  checksum: 9c4b6804a53b19010afd6683fb70f6cba2f8dfb2c9db3a6013b24ca0a5b837b6e2e24ca513f3cdb9bf41841095cc4c54c48d42a2aecbb6334d97e5e038f997a8
   languageName: node
   linkType: hard
 
@@ -4082,12 +4082,13 @@ __metadata:
     "@react-navigation/bottom-tabs": ^6.6.1
     "@react-navigation/native": ^6.1.18
     "@react-navigation/native-stack": ^6.11.0
-    "@shopify/react-native-skia": ^1.5.1
+    "@shopify/react-native-skia": ^1.11.3
     "@types/react": ^18.2.6
     "@types/react-native-push-notification": ^8.1.4
     "@types/react-native-vector-icons": ^6.4.18
     "@types/react-test-renderer": ^18.0.0
     autoprefixer: ^10.4.20
+    axios: ^1.7.9
     babel-jest: ^29.6.3
     babel-plugin-module-resolver: ^5.0.2
     body-parser: ^1.20.3
@@ -4656,6 +4657,17 @@ __metadata:
   dependencies:
     possible-typed-array-names: ^1.0.0
   checksum: 1aa3ffbfe6578276996de660848b6e95669d9a95ad149e3dd0c0cda77db6ee1dbd9d1dd723b65b6d277b882dd0c4b91a654ae9d3cf9e1254b7e93e4908d78fd3
+  languageName: node
+  linkType: hard
+
+"axios@npm:^1.7.9":
+  version: 1.7.9
+  resolution: "axios@npm:1.7.9"
+  dependencies:
+    follow-redirects: ^1.15.6
+    form-data: ^4.0.0
+    proxy-from-env: ^1.1.0
+  checksum: cb8ce291818effda09240cb60f114d5625909b345e10f389a945320e06acf0bc949d0f8422d25720f5dd421362abee302c99f5e97edec4c156c8939814b23d19
   languageName: node
   linkType: hard
 
@@ -7468,6 +7480,16 @@ __metadata:
   version: 1.1.0
   resolution: "fn.name@npm:1.1.0"
   checksum: e357144f48cfc9a7f52a82bbc6c23df7c8de639fce049cac41d41d62cabb740cdb9f14eddc6485e29c933104455bdd7a69bb14a9012cef9cd4fa252a4d0cf293
+  languageName: node
+  linkType: hard
+
+"follow-redirects@npm:^1.15.6":
+  version: 1.15.9
+  resolution: "follow-redirects@npm:1.15.9"
+  peerDependenciesMeta:
+    debug:
+      optional: true
+  checksum: 859e2bacc7a54506f2bf9aacb10d165df78c8c1b0ceb8023f966621b233717dab56e8d08baadc3ad3b9db58af290413d585c999694b7c146aaf2616340c3d2a6
   languageName: node
   linkType: hard
 

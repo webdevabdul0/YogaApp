@@ -20,6 +20,10 @@ const EditProfileScreen: React.FC<ProfileScreenProps> = ({navigation}) => {
   const [lastName, setLastName] = useState('');
   const [gender, setGender] = useState('Male');
   const [age, setAge] = useState('24');
+  const [bio, setBio] = useState(
+    'Yoga is the journey of the self, through the self, to the self',
+  );
+
   const [profilePic, setProfilePic] = useState<string | null>(null); // Profile picture URI
   const [isUploading, setIsUploading] = useState(false); // Uploading state
   const [currentProfilePic, setCurrentProfilePic] = useState<string | null>(
@@ -38,10 +42,14 @@ const EditProfileScreen: React.FC<ProfileScreenProps> = ({navigation}) => {
             .get();
           if (userDoc.exists) {
             const userData = userDoc.data();
-            setFirstName(userData?.firstName || ''); // Set default first name
-            setLastName(userData?.lastName || ''); // Set default last name
+            setFirstName(userData?.firstName || 'Yoga'); // Set default first name
+            setLastName(userData?.lastName || 'User'); // Set default last name
             setGender(userData?.gender || 'Male');
             setAge(userData?.age || '24');
+            setBio(
+              userData?.bio ||
+                'Yoga is the journey of the self, through the self, to the self',
+            );
             setCurrentProfilePic(userData?.profilePic || null);
           }
         } catch (error) {
@@ -111,6 +119,7 @@ const EditProfileScreen: React.FC<ProfileScreenProps> = ({navigation}) => {
           lastName: lastName,
           gender: gender,
           age: age,
+          bio: bio,
           profilePic: profilePicUrl, // Save the image download URL
         });
 
@@ -231,6 +240,14 @@ const EditProfileScreen: React.FC<ProfileScreenProps> = ({navigation}) => {
           keyboardType="numeric"
           value={age}
           onChangeText={setAge}
+        />
+        {/* User Bio */}
+        <Text className="text-lg mb-2">Enter your Bio</Text>
+        <TextInput
+          className="bg-gray-200 p-4 rounded-lg mb-5"
+          value={bio}
+          placeholder="Your Bio"
+          onChangeText={setBio}
         />
 
         {/* Save Button */}
