@@ -1,7 +1,8 @@
-import type { Delegate } from "react-native-mediapipe";
-import * as React from "react";
+import type {Delegate} from 'react-native-mediapipe';
+import * as React from 'react';
 
 export type AppSettings = {
+  musicEnabled: boolean | undefined;
   maxResults: number;
   threshold: number;
   processor: Delegate;
@@ -19,7 +20,7 @@ export const SettingsContext = React.createContext<
 export const useSettings = () => {
   const context = React.useContext(SettingsContext);
   if (!context) {
-    throw new Error("useSettings must be used within a SettingsProvider");
+    throw new Error('useSettings must be used within a SettingsProvider');
   }
   return context;
 };

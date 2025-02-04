@@ -145,7 +145,7 @@ const EditProfileScreen: React.FC<ProfileScreenProps> = ({navigation}) => {
           <Text className="text-red-600">Yoga</Text>
         </Text>
 
-        <Text className="text-2xl font-bold text-center mb-8">
+        <Text className="text-xl font-semibold text-gray-900 text-center mb-8">
           Edit Profile
         </Text>
 

@@ -34,6 +34,7 @@ function App(): React.JSX.Element {
     threshold: 90,
     processor: Delegate.GPU,
     model: 'pose_landmarker_heavy',
+    musicEnabled: true,
   });
 
   return (

@@ -5,16 +5,32 @@ import {
   Image,
   TouchableOpacity,
   ActivityIndicator,
+  ImageBackground,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome5';
 import firestore from '@react-native-firebase/firestore';
 import auth from '@react-native-firebase/auth';
 import {useNavigation} from '@react-navigation/native'; // Import useNavigation hook
-
+import yogaImage from '../assets/share.jpg';
+import Share from 'react-native-share';
 const ProfileScreen = () => {
   const navigation = useNavigation(); // Initialize the navigation object
   const [userData, setUserData] = useState(null);
   const [loading, setLoading] = useState(true);
+
+  const handleSocialShare = async () => {
+    try {
+      const shareOptions = {
+        title: 'My Yoga Streak!',
+        message:
+          "🔥 I've completed another day yoga streak! Keep up the habit and stay healthy.Join me: Download MyYOGA",
+      };
+
+      await Share.open(shareOptions);
+    } catch (error) {
+      console.log('Error sharing:', error);
+    }
+  };
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -104,15 +120,37 @@ const ProfileScreen = () => {
         </View>
       </View>
 
-      {/* Share Progress Card */}
-      <View className="bg-indigo-900 rounded-2xl w-11/12 mt-5 p-5 items-center">
-        <Icon name="fire" size={40} color="#FF6A88" />
-        <Text className="text-[#EB544D] font-bold mt-2 text-lg">MyYoga</Text>
-        <Text className="text-white mt-1">2 DAYS of constant Yoga</Text>
-        <TouchableOpacity className="bg-[#EB544D] rounded-full px-4 py-2 mt-3">
-          <Text className="text-white font-bold">Share on Social</Text>
-        </TouchableOpacity>
-      </View>
+      <ImageBackground
+        source={yogaImage}
+        style={{
+          width: '92%',
+          height: 180,
+          alignSelf: 'center',
+          marginTop: 20,
+          borderRadius: 20,
+          overflow: 'hidden',
+          justifyContent: 'center',
+          alignItems: 'center',
+        }}>
+        <View style={{alignItems: 'center'}}>
+          <Text className="text-white text-base right-7 font-black  mt-20">
+            🔥 2 Days Streak
+          </Text>
+          <TouchableOpacity
+            onPress={handleSocialShare}
+            className="p-2 bg-black/40 rounded-lg right-4 mt-2">
+            <Text className="text-sm text-white font-semibold">
+              Share on Social
+            </Text>
+          </TouchableOpacity>
+        </View>
+        <Icon
+          name="share-alt"
+          size={24}
+          color="#fff"
+          style={{position: 'absolute', top: 15, right: 15}}
+        />
+      </ImageBackground>
     </View>
   );
 };

@@ -28,17 +28,28 @@ import {vec, type SkPoint} from '@shopify/react-native-skia';
 import {
   checkStandingPose,
   checkTreePose,
+  checkChairPose,
+  checkWarrior2Pose,
+  checkTrianglePose,
   TreePoseFeedback,
+  ChairPoseFeedback,
+  Warrior2PoseFeedback,
+  TrianglePoseFeedback,
 } from '../postureUtils';
 import {CameraScreenProps} from '../navigation/StackParamList';
 import Ionicons from 'react-native-vector-icons/Ionicons'; // Import icon library
 import firestore from '@react-native-firebase/firestore';
 import auth from '@react-native-firebase/auth';
+import SoundPlayer from './components/SoundPlayer';
 
 export const CameraStream: React.FC<CameraScreenProps> = ({
   navigation,
   route,
 }) => {
+  //Check based on Previous Screen of what pose are we needing
+  const {pose} = route.params;
+  const targetPose = pose.name;
+
   const {settings} = useSettings();
   const camPerm = useCameraPermission();
   const [permsGranted, setPermsGranted] = React.useState<{
@@ -47,7 +58,7 @@ export const CameraStream: React.FC<CameraScreenProps> = ({
 
   const [isLoading, setIsLoading] = React.useState(true); // Loading state
 
-  const [Feedback, setFeedback] = useState<TreePoseFeedback>({
+  const [treePoseFeedback, setTreePoseFeedback] = useState<TreePoseFeedback>({
     standingLeg: {correct: false, message: ''},
     liftedLeg: {correct: false, message: ''},
     footPosition: {correct: false, message: ''},
@@ -55,49 +66,219 @@ export const CameraStream: React.FC<CameraScreenProps> = ({
     treePose: {correct: false, message: ''},
   });
 
+  const [chairPoseFeedback, setChairPoseFeedback] = useState<ChairPoseFeedback>(
+    {
+      knees: {correct: false, message: ''},
+      hips: {correct: false, message: ''},
+      torso: {correct: false, message: ''},
+      feet: {correct: false, message: ''},
+      chairPose: {correct: false, message: ''},
+    },
+  );
+
+  const [warrior2PoseFeedback, setWarrior2PoseFeedback] =
+    useState<Warrior2PoseFeedback>({
+      frontLeg: {correct: false, message: ''},
+      backLeg: {correct: false, message: ''},
+      feet: {correct: false, message: ''},
+      hips: {correct: false, message: ''},
+      torso: {correct: false, message: ''},
+      arms: {correct: false, message: ''},
+      warrior2Pose: {correct: false, message: ''},
+    });
+
+  const [trianglePoseFeedback, setTrianglePoseFeedback] =
+    useState<TrianglePoseFeedback>({
+      frontLeg: {correct: false, message: ''},
+      backLeg: {correct: false, message: ''},
+      feet: {correct: false, message: ''},
+      hips: {correct: false, message: ''},
+      torso: {correct: false, message: ''},
+      arms: {correct: false, message: ''},
+      trianglePose: {correct: false, message: ''}, // Add this for specific Triangle Pose feedback
+    });
+
   const renderFeedback = () => {
     const feedbackElements = [];
-    if (Feedback.standingLeg.message) {
-      feedbackElements.push(
-        <Text key="standingLeg" style={styles.feedbackText}>
-          {Feedback.standingLeg.message}
-        </Text>,
-      );
+
+    if (targetPose === 'Tree Pose') {
+      if (treePoseFeedback.standingLeg.message) {
+        feedbackElements.push(
+          <Text key="standingLeg" style={styles.feedbackText}>
+            {treePoseFeedback.standingLeg.message}
+          </Text>,
+        );
+      }
+      if (treePoseFeedback.liftedLeg.message) {
+        feedbackElements.push(
+          <Text key="liftedLeg" style={styles.feedbackText}>
+            {treePoseFeedback.liftedLeg.message}
+          </Text>,
+        );
+      }
+      if (treePoseFeedback.footPosition.message) {
+        feedbackElements.push(
+          <Text key="footPosition" style={styles.feedbackText}>
+            {treePoseFeedback.footPosition.message}
+          </Text>,
+        );
+      }
+      if (treePoseFeedback.torso.message) {
+        feedbackElements.push(
+          <Text key="torso" style={styles.feedbackText}>
+            {treePoseFeedback.torso.message}
+          </Text>,
+        );
+      }
+      if (treePoseFeedback.treePose.message) {
+        feedbackElements.push(
+          <Text key="treePose" style={styles.feedbackText}>
+            {treePoseFeedback.treePose.message}
+          </Text>,
+        );
+      }
+    } else if (targetPose === 'Chair Pose') {
+      if (chairPoseFeedback.knees.message) {
+        feedbackElements.push(
+          <Text key="knees" style={styles.feedbackText}>
+            {chairPoseFeedback.knees.message}
+          </Text>,
+        );
+      }
+      if (chairPoseFeedback.hips.message) {
+        feedbackElements.push(
+          <Text key="hips" style={styles.feedbackText}>
+            {chairPoseFeedback.hips.message}
+          </Text>,
+        );
+      }
+      if (chairPoseFeedback.torso.message) {
+        feedbackElements.push(
+          <Text key="torso" style={styles.feedbackText}>
+            {chairPoseFeedback.torso.message}
+          </Text>,
+        );
+      }
+      if (chairPoseFeedback.feet.message) {
+        feedbackElements.push(
+          <Text key="feet" style={styles.feedbackText}>
+            {chairPoseFeedback.feet.message}
+          </Text>,
+        );
+      }
+      if (chairPoseFeedback.chairPose.message) {
+        feedbackElements.push(
+          <Text key="chairPose" style={styles.feedbackText}>
+            {chairPoseFeedback.chairPose.message}
+          </Text>,
+        );
+      }
+    } else if (targetPose === 'Warrior II') {
+      if (warrior2PoseFeedback.frontLeg.message) {
+        feedbackElements.push(
+          <Text key="frontLeg" style={styles.feedbackText}>
+            {warrior2PoseFeedback.frontLeg.message}
+          </Text>,
+        );
+      }
+      if (warrior2PoseFeedback.backLeg.message) {
+        feedbackElements.push(
+          <Text key="backLeg" style={styles.feedbackText}>
+            {warrior2PoseFeedback.backLeg.message}
+          </Text>,
+        );
+      }
+      if (warrior2PoseFeedback.feet.message) {
+        feedbackElements.push(
+          <Text key="feet" style={styles.feedbackText}>
+            {warrior2PoseFeedback.feet.message}
+          </Text>,
+        );
+      }
+      if (warrior2PoseFeedback.hips.message) {
+        feedbackElements.push(
+          <Text key="hips" style={styles.feedbackText}>
+            {warrior2PoseFeedback.hips.message}
+          </Text>,
+        );
+      }
+      if (warrior2PoseFeedback.torso.message) {
+        feedbackElements.push(
+          <Text key="torso" style={styles.feedbackText}>
+            {warrior2PoseFeedback.torso.message}
+          </Text>,
+        );
+      }
+      if (warrior2PoseFeedback.arms.message) {
+        feedbackElements.push(
+          <Text key="arms" style={styles.feedbackText}>
+            {warrior2PoseFeedback.arms.message}
+          </Text>,
+        );
+      }
+      if (warrior2PoseFeedback.warrior2Pose.message) {
+        feedbackElements.push(
+          <Text key="warrior2Pose" style={styles.feedbackText}>
+            {warrior2PoseFeedback.warrior2Pose.message}
+          </Text>,
+        );
+      }
+    } else if (targetPose === 'Triangle Pose') {
+      if (trianglePoseFeedback.frontLeg.message) {
+        feedbackElements.push(
+          <Text key="frontLeg" style={styles.feedbackText}>
+            {trianglePoseFeedback.frontLeg.message}
+          </Text>,
+        );
+      }
+      if (trianglePoseFeedback.backLeg.message) {
+        feedbackElements.push(
+          <Text key="backLeg" style={styles.feedbackText}>
+            {trianglePoseFeedback.backLeg.message}
+          </Text>,
+        );
+      }
+      if (trianglePoseFeedback.feet.message) {
+        feedbackElements.push(
+          <Text key="feet" style={styles.feedbackText}>
+            {trianglePoseFeedback.feet.message}
+          </Text>,
+        );
+      }
+      if (trianglePoseFeedback.hips.message) {
+        feedbackElements.push(
+          <Text key="hips" style={styles.feedbackText}>
+            {trianglePoseFeedback.hips.message}
+          </Text>,
+        );
+      }
+      if (trianglePoseFeedback.torso.message) {
+        feedbackElements.push(
+          <Text key="torso" style={styles.feedbackText}>
+            {trianglePoseFeedback.torso.message}
+          </Text>,
+        );
+      }
+      if (trianglePoseFeedback.arms.message) {
+        feedbackElements.push(
+          <Text key="arms" style={styles.feedbackText}>
+            {trianglePoseFeedback.arms.message}
+          </Text>,
+        );
+      }
+      if (trianglePoseFeedback.trianglePose.message) {
+        feedbackElements.push(
+          <Text key="trianglePose" style={styles.feedbackText}>
+            {trianglePoseFeedback.trianglePose.message}
+          </Text>,
+        );
+      }
+
+      return feedbackElements;
     }
-    if (Feedback.liftedLeg.message) {
-      feedbackElements.push(
-        <Text key="liftedLeg" style={styles.feedbackText}>
-          {Feedback.liftedLeg.message}
-        </Text>,
-      );
-    }
-    if (Feedback.footPosition.message) {
-      feedbackElements.push(
-        <Text key="footPosition" style={styles.feedbackText}>
-          {Feedback.footPosition.message}
-        </Text>,
-      );
-    }
-    if (Feedback.torso.message) {
-      feedbackElements.push(
-        <Text key="torso" style={styles.feedbackText}>
-          {Feedback.torso.message}
-        </Text>,
-      );
-    }
-    if (Feedback.treePose.message) {
-      feedbackElements.push(
-        <Text key="treePose" style={styles.feedbackText}>
-          {Feedback.treePose.message}
-        </Text>,
-      );
-    }
-    return feedbackElements;
   };
 
-  const {pose} = route.params;
-  const targetPose = pose.name;
-
+  //Handles Ending the Session
   const handleEndSession = async () => {
     try {
       // Mark session attendance in Firestore
@@ -177,7 +358,22 @@ export const CameraStream: React.FC<CameraScreenProps> = ({
     }
   };
 
-  const [timer, setTimer] = React.useState(10); // 2 minutes in seconds
+  const [timer, setTimer] = React.useState(() => {
+    // Set the initial timer based on pose.name
+    switch (pose.name) {
+      case 'Tree Pose':
+        return 30; // 30 seconds for Tree Pose
+      case 'Chair Pose':
+        return 30; // 45 seconds for Chair Pose
+      case 'Warrior II':
+        return 10; // 10 seconds for Warrior II
+      case 'Triangle Pose':
+        return 30; // 60 seconds for Triangle Pose
+      default:
+        return 30; // Default to 30 seconds if pose.name is unknown
+    }
+  });
+
   const [timerActive, setTimerActive] = React.useState(false); // Initially the timer is not active
 
   React.useEffect(() => {
@@ -268,10 +464,38 @@ export const CameraStream: React.FC<CameraScreenProps> = ({
         setPostureCorrect(isStanding);
       } else if (targetPose === 'Tree Pose') {
         const feedback = checkTreePose(pts);
-        setFeedback(feedback);
+        setTreePoseFeedback(feedback); // Set Tree Pose feedback
         if (feedback.treePose.correct && !timerActive) {
           setTimerActive(true); // Start the timer when the pose is correct for the first time
         } else if (!feedback.treePose.correct && timerActive) {
+          setTimerActive(false); // Stop the timer if pose is not correct
+        }
+      } else if (targetPose === 'Chair Pose') {
+        const feedback = checkChairPose(pts);
+        setChairPoseFeedback(feedback); // Set Chair Pose feedback
+
+        if (feedback.chairPose.correct && !timerActive) {
+          setTimerActive(true); // Start the timer when the pose is correct for the first time
+        } else if (!feedback.chairPose.correct && timerActive) {
+          setTimerActive(false); // Stop the timer if pose is not correct
+        }
+      } else if (targetPose === 'Warrior II') {
+        const feedback = checkWarrior2Pose(pts);
+        setWarrior2PoseFeedback(feedback); // Set Warrior II Pose feedback
+
+        if (feedback.warrior2Pose.correct && !timerActive) {
+          setTimerActive(true); // Start the timer when the pose is correct for the first time
+        } else if (!feedback.warrior2Pose.correct && timerActive) {
+          setTimerActive(false); // Stop the timer if pose is not correct
+        }
+      } else if (targetPose === 'Triangle Pose') {
+        // Add logic for Triangle Pose
+        const feedback = checkTrianglePose(pts);
+        setTrianglePoseFeedback(feedback); // Set Triangle Pose feedback
+
+        if (feedback.trianglePose.correct && !timerActive) {
+          setTimerActive(true); // Start the timer when the pose is correct for the first time
+        } else if (!feedback.trianglePose.correct && timerActive) {
           setTimerActive(false); // Stop the timer if pose is not correct
         }
       }
@@ -320,22 +544,60 @@ export const CameraStream: React.FC<CameraScreenProps> = ({
           <Ionicons name="camera-reverse" size={30} color="white" />
         </TouchableOpacity>
 
+        {/* Conditionally Render SoundPlayer if musicEnabled is true */}
+        {settings.musicEnabled && (
+          <View className="absolute top-10 left-5">
+            <SoundPlayer />
+          </View>
+        )}
+
         <View style={styles.timerContainer}>
-          {Feedback.treePose.correct === false && (
-            <Text style={styles.poseMessage}>Make a Tree Pose</Text>
-          )}
-          {Feedback.treePose.correct === true && (
-            <Text style={styles.poseMessage}>Good! Stay in Position</Text>
-          )}
+          {targetPose === 'Tree Pose' &&
+            treePoseFeedback.treePose.correct === false && (
+              <Text style={styles.poseMessage}>Make a {pose.name}</Text>
+            )}
+          {targetPose === 'Tree Pose' &&
+            treePoseFeedback.treePose.correct === true && (
+              <Text style={styles.poseMessage}>Good! Stay in Position</Text>
+            )}
+
+          {targetPose === 'Chair Pose' &&
+            chairPoseFeedback.chairPose.correct === false && (
+              <Text style={styles.poseMessage}>Make a {pose.name}</Text>
+            )}
+          {targetPose === 'Chair Pose' &&
+            chairPoseFeedback.chairPose.correct === true && (
+              <Text style={styles.poseMessage}>Good! Stay in Position</Text>
+            )}
+
+          {targetPose === 'Warrior II' &&
+            warrior2PoseFeedback.warrior2Pose.correct === false && (
+              <Text style={styles.poseMessage}>Make a {pose.name}</Text>
+            )}
+          {targetPose === 'Warrior II' &&
+            warrior2PoseFeedback.warrior2Pose.correct === true && (
+              <Text style={styles.poseMessage}>Good! Stay in Position</Text>
+            )}
+
+          {targetPose === 'Triangle Pose' &&
+            trianglePoseFeedback.trianglePose.correct === false && (
+              <Text style={styles.poseMessage}>Make a {pose.name}</Text>
+            )}
+          {targetPose === 'Triangle Pose' &&
+            trianglePoseFeedback.trianglePose.correct === true && (
+              <Text style={styles.poseMessage}>Good! Stay in Position</Text>
+            )}
+
           <Text style={styles.timerText}>{formattedTime}</Text>
         </View>
 
         {/* End Session Button */}
         <TouchableOpacity
           style={styles.endSessionButton}
-          onPress={handleEndSession}>
+          onPress={() => navigation.navigate('PoseDetail', {pose})}>
           <Text style={styles.endSessionText}>End Session</Text>
         </TouchableOpacity>
+
         <View style={styles.feedbackContainer}>{renderFeedback()}</View>
       </View>
     );

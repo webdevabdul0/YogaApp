@@ -23,14 +23,15 @@ const routines = [
     description: 'Fix Your Whole Body Posture',
     buttonText: 'Start',
     imageSource: require('../assets/energy-morning.png'),
+    poses: [1, 3], // Add valid pose IDs
   },
   {
     title: 'Night Routine',
     description: 'Relax and Unwind Before Bed',
     buttonText: 'Start',
     imageSource: require('../assets/energy-morning.png'), // Replace with actual image
+    poses: [2, 4], // Add valid pose IDs
   },
-  // Add more routines as needed
 ];
 
 const yogaPoses = [
@@ -38,7 +39,7 @@ const yogaPoses = [
     id: 1,
     name: 'Tree Pose',
     tagLine: 'Fix Your Whole Body Posture.',
-    duration: '2 minutes',
+    duration: '30 seconds',
     image: require('../assets/tree-pose.png'),
     difficulty: 'Basic',
     gender: 'Male & Female',
@@ -52,7 +53,7 @@ const yogaPoses = [
     id: 2,
     name: 'Chair Pose',
     tagLine: 'Build strength and stability with Chair Pose.',
-    duration: '1 minute',
+    duration: '30 seconds',
     image: require('../assets/chair-pose.png'),
     difficulty: 'Intermediate',
     gender: 'Male & Female',
@@ -66,7 +67,7 @@ const yogaPoses = [
     id: 3,
     name: 'Warrior II',
     tagLine: 'Embrace strength and stability in Warrior II.',
-    duration: '45 seconds',
+    duration: '10 seconds',
     image: require('../assets/warrior-ii.png'),
     difficulty: 'Intermediate',
     gender: 'Male & Female',
@@ -80,7 +81,7 @@ const yogaPoses = [
     id: 4,
     name: 'Triangle Pose',
     tagLine: 'Expand and energize with Triangle Pose.',
-    duration: '45 seconds',
+    duration: '30 seconds',
     image: require('../assets/triangle-pose.png'),
     difficulty: 'Basic',
     gender: 'Male & Female',
@@ -249,6 +250,9 @@ const HomeScreen: React.FC<HomeScreenProps> = ({navigation, route}) => {
                   {routine.description}
                 </Text>
                 <TouchableOpacity
+                  onPress={() =>
+                    navigation.navigate('RoutineDetailScreen', {routine})
+                  }
                   style={{
                     backgroundColor: '#ED706A',
                     paddingVertical: 15,

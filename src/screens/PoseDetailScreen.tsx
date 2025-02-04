@@ -7,6 +7,7 @@ import {
   Modal,
   TouchableWithoutFeedback,
   Animated,
+  Button,
 } from 'react-native';
 import {PoseDetailScreenProps} from '../navigation/StackParamList';
 import Icon from 'react-native-vector-icons/FontAwesome';
@@ -20,6 +21,7 @@ const PoseDetailScreen: React.FC<PoseDetailScreenProps> = ({
   route,
   navigation,
 }) => {
+  //********************************************** */
   const [modalAnim] = useState(new Animated.Value(0));
   const [isModalVisible, setModalVisible] = useState(false);
   // Use Animated API for content slide animation
@@ -97,6 +99,7 @@ const PoseDetailScreen: React.FC<PoseDetailScreenProps> = ({
           <Text className="text-2xl font-bold mt-2 text-black">
             {pose.name}
           </Text>
+
           <View className="flex-row items-center mt-1">
             <View className="mr-1">
               <Icon name="user" size={16} color="#71727a" />

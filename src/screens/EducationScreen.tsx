@@ -19,6 +19,11 @@ const EducationScreen: React.FC<EducationScreenProps> = ({navigation}) => {
   const inputRef = useRef<TextInput>(null);
   const [, setIsSearchActive] = useState(false);
 
+  const [refresh, setRefresh] = useState(false);
+
+  const handleRefresh = () => {
+    setRefresh(!refresh); // Toggle state to trigger a re-render
+  };
   // Fetch news articles from the API
   const fetchNews = async (query: string) => {
     try {
@@ -39,7 +44,7 @@ const EducationScreen: React.FC<EducationScreenProps> = ({navigation}) => {
 
   useEffect(() => {
     fetchNews('yoga-pose'); // Fetch yoga-related news when the component mounts
-  }, []);
+  }, [refresh]);
 
   const posts = [
     {
@@ -106,12 +111,9 @@ const EducationScreen: React.FC<EducationScreenProps> = ({navigation}) => {
         <Text style={styles.headerText}>
           My<Text style={styles.headerTextRed}>Yoga</Text>
         </Text>
-        <Icon
-          name="notifications"
-          size={24}
-          color="#333"
-          style={styles.notificationIcon}
-        />
+        <TouchableOpacity style={styles.notificationIcon}>
+          <Icon name="refresh" size={24} color="#333" onPress={handleRefresh} />
+        </TouchableOpacity>
       </View>
 
       {/* Search Bar */}

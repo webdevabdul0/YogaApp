@@ -7,7 +7,7 @@ import {
   ScrollView,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome'; // Importing FontAwesome icons
-
+import {Switch} from 'react-native';
 import {CameraSettingsScreenProps} from '../../navigation/StackParamList';
 
 import Slider from '@react-native-community/slider';
@@ -89,7 +89,7 @@ const theme = {
 const CameraSettingsScreen: React.FC<CameraSettingsScreenProps> = ({
   navigation,
 }) => {
-  const {settings, setSettings} = useSettings();
+  const {settings, setSettings} = useSettings(); // Access global settings
 
   return (
     <ScrollView contentContainerStyle={styles.scrollContainer}>
@@ -107,9 +107,7 @@ const CameraSettingsScreen: React.FC<CameraSettingsScreenProps> = ({
           label="Processor: "
           value={settings.processor}
           setValue={value => {
-            console.log('Selected processor:', value); // Log the selected value
             setSettings({...settings, processor: value as Delegate});
-            console.log('Delegate values: ', Delegate.GPU, Delegate.CPU); // Log their values
           }}
           items={[
             {label: 'CPU', value: Delegate.CPU},
@@ -139,6 +137,21 @@ const CameraSettingsScreen: React.FC<CameraSettingsScreenProps> = ({
           minValue={0}
           maxValue={100}
         />
+
+        {/* Music Toggle Switch */}
+        <View style={styles.item} className="w-[350px]">
+          <Text className="text-md text-black font-medium">
+            Use Music During Yoga Sessions
+          </Text>
+          <Switch
+            value={settings.musicEnabled} // Use global settings
+            onValueChange={value =>
+              setSettings({...settings, musicEnabled: value})
+            } // Update globally
+            trackColor={{false: '#ddd', true: '#ED706A'}} // Colors for inactive and active states
+            thumbColor={settings.musicEnabled ? '#ED706A' : '#f4f3f4'} // Thumb color
+          />
+        </View>
       </View>
     </ScrollView>
   );

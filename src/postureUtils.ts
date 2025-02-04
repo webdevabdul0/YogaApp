@@ -26,35 +26,14 @@ export const calculateAngle = (
     angleDeg = 360 - angleDeg;
   }
 
-  {
-    /*}
-  // Logging intermediate values
-  console.log(
-    `Point A: ${JSON.stringify(p1)}, Point B: ${JSON.stringify(
-      p2,
-    )}, Point C: ${JSON.stringify(p3)}`,
-  );
-  console.log(
-    `Differences: dx1: ${dx1}, dy1: ${dy1}, dx2: ${dx2}, dy2: ${dy2}`,
-  );
-  console.log(
-    `Angles in radians: radians1: ${radians1}, radians2: ${radians2}`,
-  );
-  console.log(`Angle in degrees: ${angleDeg}`);
-{*/
-  }
   return angleDeg;
 };
 
-// Function to check if the pose is a standing pose
+// Function to check if the pose is a standing pose just for testing
 export const checkStandingPose = (landmarks: any[]): boolean => {
   const leftHip = landmarks[KnownPoseLandmarks.leftHip];
   const leftKnee = landmarks[KnownPoseLandmarks.leftKnee];
   const leftAnkle = landmarks[KnownPoseLandmarks.leftAnkle];
-
-  console.log('Left Hip:', leftHip);
-  console.log('Left Knee:', leftKnee);
-  console.log('Left Ankle:', leftAnkle);
 
   if (leftHip && leftKnee && leftAnkle) {
     const kneeAngle = calculateAngle(leftHip, leftKnee, leftAnkle);
@@ -75,6 +54,7 @@ export const checkStandingPose = (landmarks: any[]): boolean => {
   return false;
 };
 
+//Typescript Types
 export interface TreePoseFeedback {
   standingLeg: {correct: boolean; message: string}; // true if correct, false if incorrect with feedback message
   liftedLeg: {correct: boolean; message: string}; // true if correct, false if incorrect with feedback message
@@ -82,6 +62,35 @@ export interface TreePoseFeedback {
   torso: {correct: boolean; message: string}; // true if correct, false if incorrect with feedback message
   treePose: {correct: boolean; message: string}; // true if correct, false if incorrect with feedback message
 }
+
+export interface ChairPoseFeedback {
+  knees: {correct: boolean; message: string};
+  hips: {correct: boolean; message: string};
+  torso: {correct: boolean; message: string};
+  feet: {correct: boolean; message: string};
+  chairPose: {correct: boolean; message: string};
+}
+
+export interface Warrior2PoseFeedback {
+  frontLeg: {correct: boolean; message: string};
+  backLeg: {correct: boolean; message: string};
+  feet: {correct: boolean; message: string};
+  hips: {correct: boolean; message: string};
+  torso: {correct: boolean; message: string};
+  arms: {correct: boolean; message: string};
+  warrior2Pose: {correct: boolean; message: string};
+}
+
+export interface TrianglePoseFeedback {
+  frontLeg: {correct: boolean; message: string};
+  backLeg: {correct: boolean; message: string};
+  feet: {correct: boolean; message: string};
+  hips: {correct: boolean; message: string};
+  torso: {correct: boolean; message: string};
+  arms: {correct: boolean; message: string};
+  trianglePose: {correct: boolean; message: string};
+}
+
 // Function to check if the pose is Tree Pose
 export const checkTreePose = (landmarks: any[]): TreePoseFeedback => {
   const leftHip = landmarks[KnownPoseLandmarks.leftHip];
@@ -166,10 +175,8 @@ export const checkTreePose = (landmarks: any[]): TreePoseFeedback => {
   return feedback;
 };
 
-// Function to check if the pose is Chair Pose
-export const checkChairPose = (
-  landmarks: any[],
-): {isChairPose: boolean; feedback: string} => {
+// Function to check if the pose is Tree Pose
+export const checkChairPose = (landmarks: any[]): ChairPoseFeedback => {
   const leftHip = landmarks[KnownPoseLandmarks.leftHip];
   const leftKnee = landmarks[KnownPoseLandmarks.leftKnee];
   const leftAnkle = landmarks[KnownPoseLandmarks.leftAnkle];
@@ -180,17 +187,14 @@ export const checkChairPose = (
   const leftShoulder = landmarks[KnownPoseLandmarks.leftShoulder];
   const rightShoulder = landmarks[KnownPoseLandmarks.rightShoulder];
 
-  const leftFootIndex = landmarks[KnownPoseLandmarks.leftFootIndex];
-  const rightFootIndex = landmarks[KnownPoseLandmarks.rightFootIndex];
-
-  const feedback = {
-    knees: '',
-    hips: '',
-    torso: '',
-    feet: '',
+  const feedback: ChairPoseFeedback = {
+    knees: {correct: false, message: ''},
+    hips: {correct: false, message: ''},
+    torso: {correct: false, message: ''},
+    feet: {correct: false, message: ''},
+    chairPose: {correct: false, message: ''},
   };
 
-  // Check if all necessary landmarks are available
   if (
     leftHip &&
     leftKnee &&
@@ -199,71 +203,59 @@ export const checkChairPose = (
     rightKnee &&
     rightAnkle &&
     leftShoulder &&
-    rightShoulder &&
-    leftFootIndex &&
-    rightFootIndex
+    rightShoulder
   ) {
-    // Calculate the angle for the standing leg (left leg)
+    // **Check Knee Bend**
     const leftKneeAngle = calculateAngle(leftHip, leftKnee, leftAnkle);
     const rightKneeAngle = calculateAngle(rightHip, rightKnee, rightAnkle);
 
-    const expectedKneeAngleMin = 85; // Thighs parallel to the ground
-    const expectedKneeAngleMax = 105;
+    feedback.knees.correct =
+      leftKneeAngle >= 85 &&
+      leftKneeAngle <= 105 &&
+      rightKneeAngle >= 85 &&
+      rightKneeAngle <= 105;
 
-    const isKneeBent =
-      leftKneeAngle >= expectedKneeAngleMin &&
-      leftKneeAngle <= expectedKneeAngleMax &&
-      rightKneeAngle >= expectedKneeAngleMin &&
-      rightKneeAngle <= expectedKneeAngleMax;
-
-    // Provide feedback on knee angle
-    feedback.knees = isKneeBent
+    feedback.knees.message = feedback.knees.correct
       ? ''
-      : leftKneeAngle < expectedKneeAngleMin ||
-        rightKneeAngle < expectedKneeAngleMin
-      ? 'Bend your knees more.'
-      : 'Straighten your knees a bit more.';
+      : 'Bend your knees more, keeping thighs parallel to the floor.';
 
-    // Check for hips alignment (hips lowered, pelvis tilted backward slightly)
-    const isHipsLowered = leftHip.y > leftKnee.y && rightHip.y > rightKnee.y;
-    feedback.hips = isHipsLowered
+    // **Check Hip Position (Hips Should Be Behind Knees in Side View)**
+    feedback.hips.correct = leftHip.x < leftKnee.x && rightHip.x < rightKnee.x;
+    feedback.hips.message = feedback.hips.correct
       ? ''
-      : 'Lower your hips more for better alignment.';
+      : 'Push your hips back more to align correctly.';
 
-    // Calculate torso angle (slightly forward angle)
+    // **Check Torso Angle (Leaning Slightly Forward)**
     const torsoAngle = calculateAngle(leftShoulder, leftHip, rightShoulder);
-    const isTorsoLeaningForward = torsoAngle >= 160 && torsoAngle <= 180;
-    feedback.torso = isTorsoLeaningForward
+    feedback.torso.correct = torsoAngle >= 160 && torsoAngle <= 180;
+    feedback.torso.message = feedback.torso.correct
       ? ''
-      : torsoAngle < 160
-      ? 'Lean forward a little more.'
-      : 'Straighten your torso slightly.';
+      : 'Lean your torso slightly forward to balance the pose.';
 
-    // Check if feet are hip-width apart (roughly)
-    const isFeetAligned =
-      Math.abs(leftFootIndex.x - rightFootIndex.x) < 0.1 &&
-      Math.abs(leftFootIndex.y - rightFootIndex.y) < 0.1;
-    feedback.feet = isFeetAligned
+    // **Check if Knees Stay Behind Toes**
+    feedback.feet.correct =
+      leftKnee.x < leftAnkle.x + 0.1 && rightKnee.x < rightAnkle.x + 0.1;
+    feedback.feet.message = feedback.feet.correct
       ? ''
-      : 'Adjust your feet to be more in line with each other.';
+      : 'Ensure your knees don’t go past your toes. Shift your weight back.';
 
-    // Determine if all conditions are met for Chair Pose
-    const isChairPose =
-      isKneeBent && isHipsLowered && isTorsoLeaningForward && isFeetAligned;
+    // **Check Overall Chair Pose**
+    feedback.chairPose.correct =
+      feedback.knees.correct &&
+      feedback.hips.correct &&
+      feedback.torso.correct &&
+      feedback.feet.correct;
 
-    return {isChairPose, feedback: Object.values(feedback).join(' ')};
+    feedback.chairPose.message = feedback.chairPose.correct
+      ? ''
+      : 'Your Chair Pose isn’t quite right. Adjust your knees, hips, and torso for better alignment.';
   }
 
-  return {
-    isChairPose: false,
-    feedback: 'Pose is not correct yet. Please adjust your position.',
-  };
+  return feedback;
 };
 
 // Function to check if the pose is Warrior II Pose
-export const checkWarrior2Pose = (
-  landmarks: any[],
-): {isWarrior2Pose: boolean; feedback: string} => {
+export const checkWarrior2Pose = (landmarks: any[]): Warrior2PoseFeedback => {
   const leftHip = landmarks[KnownPoseLandmarks.leftHip];
   const leftKnee = landmarks[KnownPoseLandmarks.leftKnee];
   const leftAnkle = landmarks[KnownPoseLandmarks.leftAnkle];
@@ -283,16 +275,16 @@ export const checkWarrior2Pose = (
   const leftFootIndex = landmarks[KnownPoseLandmarks.leftFootIndex];
   const rightFootIndex = landmarks[KnownPoseLandmarks.rightFootIndex];
 
-  const feedback = {
-    frontLeg: '',
-    backLeg: '',
-    feet: '',
-    hips: '',
-    torso: '',
-    arms: '',
+  const feedback: Warrior2PoseFeedback = {
+    frontLeg: {correct: false, message: ''},
+    backLeg: {correct: false, message: ''},
+    feet: {correct: false, message: ''},
+    hips: {correct: false, message: ''},
+    torso: {correct: false, message: ''},
+    arms: {correct: false, message: ''},
+    warrior2Pose: {correct: false, message: ''},
   };
 
-  // Check if all necessary landmarks are available
   if (
     leftHip &&
     leftKnee &&
@@ -309,7 +301,7 @@ export const checkWarrior2Pose = (
     leftFootIndex &&
     rightFootIndex
   ) {
-    // Check the knee angle for both legs
+    // **Check the knee angle for both legs**
     const leftKneeAngle = calculateAngle(leftHip, leftKnee, leftAnkle);
     const rightKneeAngle = calculateAngle(rightHip, rightKnee, rightAnkle);
 
@@ -321,34 +313,42 @@ export const checkWarrior2Pose = (
       leftKneeAngle <= expectedKneeAngleMax;
     const isBackLegStraight = rightKneeAngle > 170; // Back leg should be nearly straight
 
-    feedback.frontLeg = isFrontLegBent
+    feedback.frontLeg.correct = isFrontLegBent;
+    feedback.frontLeg.message = isFrontLegBent
       ? ''
       : 'Bend your front leg more to around 90 degrees.';
-    feedback.backLeg = isBackLegStraight
+
+    feedback.backLeg.correct = isBackLegStraight;
+    feedback.backLeg.message = isBackLegStraight
       ? ''
       : 'Straighten your back leg more.';
 
-    // Check the feet alignment
+    // **Check the feet alignment**
     const isFeetAligned =
       Math.abs(leftFootIndex.x - rightFootIndex.x) < 0.1 &&
       Math.abs(leftFootIndex.y - rightFootIndex.y) < 0.1;
-    feedback.feet = isFeetAligned
+    feedback.feet.correct = isFeetAligned;
+    feedback.feet.message = isFeetAligned
       ? ''
       : 'Position your feet slightly wider apart for better balance.';
 
-    // Check for hips alignment (hips should be open)
+    // **Check for hips alignment (hips should be open)**
     const hipsAngle = calculateAngle(leftHip, rightHip, leftKnee);
     const isHipsOpen = hipsAngle >= 30 && hipsAngle <= 50; // Hips should be open between 30° and 50°
-    feedback.hips = isHipsOpen ? '' : 'Open your hips more to face forward.';
+    feedback.hips.correct = isHipsOpen;
+    feedback.hips.message = isHipsOpen
+      ? ''
+      : 'Open your hips more to face forward.';
 
-    // Check for torso position (should be facing forward)
+    // **Check for torso position (should be facing forward)**
     const torsoAngle = calculateAngle(leftShoulder, leftHip, rightShoulder);
     const isTorsoAligned = torsoAngle > 170; // The torso should be upright or slightly forward
-    feedback.torso = isTorsoAligned
+    feedback.torso.correct = isTorsoAligned;
+    feedback.torso.message = isTorsoAligned
       ? ''
       : 'Lean your torso forward slightly to align it properly.';
 
-    // Check arm positions (should be extended and parallel to the floor)
+    // **Check arm positions (should be extended and parallel to the floor)**
     const leftArmAngle = calculateAngle(leftShoulder, leftElbow, leftWrist);
     const rightArmAngle = calculateAngle(rightShoulder, rightElbow, rightWrist);
 
@@ -358,12 +358,13 @@ export const checkWarrior2Pose = (
       rightArmAngle >= 160 &&
       rightArmAngle <= 180;
 
-    feedback.arms = isArmsExtended
+    feedback.arms.correct = isArmsExtended;
+    feedback.arms.message = isArmsExtended
       ? ''
       : 'Extend your arms fully and keep them parallel to the floor.';
 
-    // Determine if all conditions are met for Warrior II Pose
-    const isWarrior2Pose =
+    // **Check overall Warrior II Pose**
+    feedback.warrior2Pose.correct =
       isFrontLegBent &&
       isBackLegStraight &&
       isFeetAligned &&
@@ -371,20 +372,15 @@ export const checkWarrior2Pose = (
       isTorsoAligned &&
       isArmsExtended;
 
-    return {isWarrior2Pose, feedback: Object.values(feedback).join(' ')};
+    feedback.warrior2Pose.message = feedback.warrior2Pose.correct
+      ? ''
+      : 'Your Warrior II pose isn’t quite right. Adjust your legs, feet, hips, torso, and arms for better alignment.';
   }
 
-  return {
-    isWarrior2Pose: false,
-    feedback:
-      'Your Warrior II pose isn’t quite right. Please adjust your position.',
-  };
+  return feedback;
 };
 
-// Function to check if the pose is Triangle Pose
-export const checkTrianglePose = (
-  landmarks: any[],
-): {isTrianglePose: boolean; feedback: string} => {
+export const checkTrianglePose = (landmarks: any[]): TrianglePoseFeedback => {
   const leftHip = landmarks[KnownPoseLandmarks.leftHip];
   const leftKnee = landmarks[KnownPoseLandmarks.leftKnee];
   const leftAnkle = landmarks[KnownPoseLandmarks.leftAnkle];
@@ -404,16 +400,16 @@ export const checkTrianglePose = (
   const leftFootIndex = landmarks[KnownPoseLandmarks.leftFootIndex];
   const rightFootIndex = landmarks[KnownPoseLandmarks.rightFootIndex];
 
-  const feedback = {
-    frontLeg: '',
-    backLeg: '',
-    feet: '',
-    hips: '',
-    torso: '',
-    arms: '',
+  const feedback: TrianglePoseFeedback = {
+    frontLeg: {correct: false, message: ''},
+    backLeg: {correct: false, message: ''},
+    feet: {correct: false, message: ''},
+    hips: {correct: false, message: ''},
+    torso: {correct: false, message: ''},
+    arms: {correct: false, message: ''},
+    trianglePose: {correct: false, message: ''},
   };
 
-  // Check if all necessary landmarks are available
   if (
     leftHip &&
     leftKnee &&
@@ -430,75 +426,61 @@ export const checkTrianglePose = (
     leftFootIndex &&
     rightFootIndex
   ) {
-    // Check the knee angle for both legs
+    // **Check Front Leg (Straight)**
     const leftKneeAngle = calculateAngle(leftHip, leftKnee, leftAnkle);
     const rightKneeAngle = calculateAngle(rightHip, rightKnee, rightAnkle);
 
     const expectedKneeAngleMin = 170; // The front leg knee should be nearly straight
     const expectedKneeAngleMax = 180;
 
-    const isFrontLegStraight =
+    feedback.frontLeg.correct =
       leftKneeAngle >= expectedKneeAngleMin &&
       leftKneeAngle <= expectedKneeAngleMax;
-    const isBackLegStraight = rightKneeAngle >= 170; // Back leg should be straight
-
-    feedback.frontLeg = isFrontLegStraight
+    feedback.frontLeg.message = feedback.frontLeg.correct
       ? ''
       : 'Straighten your front leg more.';
-    feedback.backLeg = isBackLegStraight
+
+    // **Check Back Leg (Straight)**
+    feedback.backLeg.correct = rightKneeAngle >= 170; // Back leg should be straight
+    feedback.backLeg.message = feedback.backLeg.correct
       ? ''
       : 'Straighten your back leg more.';
 
-    // Check for feet alignment (should be in a wide stance)
+    // **Check Feet Position (Wide Stance)**
     const feetDistance = Math.abs(leftFootIndex.x - rightFootIndex.x);
-    const isFeetWideEnough = feetDistance > 0.5; // Feet should be widely apart for Triangle Pose
-    feedback.feet = isFeetWideEnough
+    feedback.feet.correct = feetDistance > 0.5; // Feet should be widely apart for Triangle Pose
+    feedback.feet.message = feedback.feet.correct
       ? ''
       : 'Move your feet wider apart for a better stance.';
 
-    // Check for hips position (hips should be facing sideways)
-    const hipsAngle = calculateAngle(leftHip, rightHip, leftKnee);
-    const isHipsSideways = hipsAngle >= 70 && hipsAngle <= 110; // Hips should face sideways between 70° and 110°
-    feedback.hips = isHipsSideways
+    // **Check Hips Alignment (Square to the front)**
+    const leftHipToRightHipAngle = calculateAngle(leftHip, rightHip, leftKnee);
+    feedback.hips.correct =
+      leftHipToRightHipAngle >= 160 && leftHipToRightHipAngle <= 180; // Hips should be square to the front
+    feedback.hips.message = feedback.hips.correct
       ? ''
-      : 'Turn your hips sideways to face the side more.';
+      : 'Square your hips to the front.';
 
-    // Check the torso angle (should be bent over the front leg)
+    // **Check Torso Alignment (Facing forward)**
     const torsoAngle = calculateAngle(leftShoulder, leftHip, rightShoulder);
-    const isTorsoLeaning = torsoAngle > 160; // The torso should be leaning to the side
-    feedback.torso = isTorsoLeaning
+    feedback.torso.correct = torsoAngle >= 160 && torsoAngle <= 180; // Torso should be facing forward
+    feedback.torso.message = feedback.torso.correct
       ? ''
-      : 'Lean your torso over the front leg for proper alignment.';
+      : 'Turn your torso forward to face the front.';
 
-    // Check arm positions (one arm reaching down, one arm up)
+    // **Check Arms Positioning (Extended)**
     const leftArmAngle = calculateAngle(leftShoulder, leftElbow, leftWrist);
     const rightArmAngle = calculateAngle(rightShoulder, rightElbow, rightWrist);
 
-    const isArmsExtended =
+    feedback.arms.correct =
       leftArmAngle >= 160 &&
       leftArmAngle <= 180 &&
       rightArmAngle >= 160 &&
       rightArmAngle <= 180;
-
-    feedback.arms = isArmsExtended
+    feedback.arms.message = feedback.arms.correct
       ? ''
       : 'Extend your arms fully and keep them parallel to the floor.';
-
-    // Determine if all conditions are met for Triangle Pose
-    const isTrianglePose =
-      isFrontLegStraight &&
-      isBackLegStraight &&
-      isFeetWideEnough &&
-      isHipsSideways &&
-      isTorsoLeaning &&
-      isArmsExtended;
-
-    return {isTrianglePose, feedback: Object.values(feedback).join(' ')};
   }
 
-  return {
-    isTrianglePose: false,
-    feedback:
-      'Your Triangle Pose isn’t quite right. Please adjust your position.',
-  };
+  return feedback;
 };

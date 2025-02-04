@@ -5,6 +5,7 @@ import PoseDetailScreen from '../screens/PoseDetailScreen';
 import {StackParamList} from '../navigation/StackParamList'; // Ensure correct path here
 import {CameraStream} from '../screens/CameraStream';
 import ProfileScreen from '../screens/ProfileScreen';
+import RoutineDetailScreen from '../screens/RoutineDetailScreen';
 
 // Define the stack with StackParamList
 const Stack = createNativeStackNavigator<StackParamList>();
@@ -16,6 +17,10 @@ const HomeStackNavigator = () => {
       <Stack.Screen name="PoseDetail" component={PoseDetailScreen} />
       <Stack.Screen name="CameraStream" component={CameraStream} />
       <Stack.Screen name="ProfileScreen" component={ProfileScreen} />
+      <Stack.Screen
+        name="RoutineDetailScreen"
+        component={RoutineDetailScreen}
+      />
     </Stack.Navigator>
   );
 };

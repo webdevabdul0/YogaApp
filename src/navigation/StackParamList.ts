@@ -71,6 +71,8 @@ export type StackParamList = {
   EditProfile: undefined;
   CameraSettings: undefined;
   CameraSettingsScreen: undefined;
+  RoutineDetailScreen: {routine: any}; // Added RoutineDetailScreen
+  PoseSessionScreen: {routine: any}; // For guiding users through the routine
   PoseDetail: {
     pose: {
       id: number; // Unique identifier for the pose
@@ -174,4 +176,7 @@ export type ProfileScreenProps = {
 };
 export type CameraSettingsScreenProps = {
   navigation: NativeStackNavigationProp<StackParamList, 'CameraSettingsScreen'>;
+};
+export type RoutineScreenProps = {
+  navigation: NativeStackNavigationProp<StackParamList, 'RoutineDetailScreen'>;
 };
