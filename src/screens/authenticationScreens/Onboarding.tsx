@@ -25,8 +25,8 @@ const Onboarding: React.FC<OnboardingScreenProps> = ({navigation}) => {
           </Text>
 
           <Text className="text-sm text-white text-center mb-7">
-            Enjoy these pre-made components and worry only about creating the
-            best product ever.
+            Focus on your flow and movement—let AI guide you through every pose
+            with precision and ease.
           </Text>
 
           <TouchableOpacity
@@ -44,8 +44,7 @@ const Onboarding: React.FC<OnboardingScreenProps> = ({navigation}) => {
 
           <TouchableOpacity onPress={() => navigation.replace('Main')}>
             <Text className="text-white text-sm">
-              Click To skip to{' '}
-              <Text className="text-red-500 font-bold">BETA Home SCREEN</Text>
+              Skip to <Text className="text-red-500 font-bold">Home</Text>
             </Text>
           </TouchableOpacity>
           <Text className="text-gray-500 text-sm font-bold">VER 1.0.0</Text>

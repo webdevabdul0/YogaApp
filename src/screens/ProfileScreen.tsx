@@ -17,7 +17,7 @@ const ProfileScreen = () => {
   const navigation = useNavigation(); // Initialize the navigation object
   const [userData, setUserData] = useState(null);
   const [loading, setLoading] = useState(true);
-
+  const [streak, setStreak] = useState(0);
   const handleSocialShare = async () => {
     try {
       const shareOptions = {
@@ -107,7 +107,9 @@ const ProfileScreen = () => {
           <Icon name="fire" size={28} color="#FF6723" />
           <View className="ml-3">
             <Text className="text-gray-600">Current Streak</Text>
-            <Text className="text-orange-600 font-bold">2 Days</Text>
+            <Text className="text-orange-600 font-bold">
+              {userData?.streak + 'Days' || '0 Days'}
+            </Text>
           </View>
         </View>
 
@@ -115,7 +117,7 @@ const ProfileScreen = () => {
           <Icon name="user-clock" size={24} color="#EB544D" />
           <View className="ml-3">
             <Text className="text-gray-600">Total Sessions</Text>
-            <Text className="text-red-600 font-bold">10</Text>
+            <Text className="text-red-600 font-bold">2</Text>
           </View>
         </View>
       </View>

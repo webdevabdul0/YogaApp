@@ -39,7 +39,7 @@ const yogaPoses = [
     id: 1,
     name: 'Tree Pose',
     tagLine: 'Fix Your Whole Body Posture.',
-    duration: '30 seconds',
+    duration: '10 seconds',
     image: require('../assets/tree-pose.png'),
     difficulty: 'Basic',
     gender: 'Male & Female',
@@ -47,7 +47,7 @@ const yogaPoses = [
       'This yoga pose involves tucking one leg into the other while your hands are in a prayer position above your head, resembling a tree. This pose can improve balance, stability, and strengthen your core.',
     targetMuscle: 'Core',
     goal: 'Improve Posture, Improve Balance',
-    videoUri: 'https://www.youtube.com/embed/Mn6RSIRCV3w?si=FdMherW4252g1RaI',
+    videoUri: 'https://youtu.be/NKhkIS0bwSU?si=BezyG5xm2XrlwDYi',
   },
   {
     id: 2,
@@ -61,7 +61,7 @@ const yogaPoses = [
       'Chair Pose is a strengthening pose that challenges your lower body while working on stability and posture.',
     targetMuscle: 'Legs and Core',
     goal: 'Build Strength, Enhance Stability',
-    videoUri: 'https://www.youtube.com/embed/Mn6RSIRCV3w?si=FdMherW4252g1RaI',
+    videoUri: 'https://youtu.be/SWXIx5Sy4Qw?si=i_U0LrxW24Cu8Kuy',
   },
   {
     id: 3,
@@ -89,7 +89,7 @@ const yogaPoses = [
       'Triangle Pose stretches the legs and torso, mobilizes the hips, and promotes overall balance and stability.',
     targetMuscle: 'Legs and Core',
     goal: 'Enhance Flexibility, Improve Stability',
-    videoUri: 'https://www.youtube.com/embed/Mn6RSIRCV3w?si=FdMherW4252g1RaI',
+    videoUri: 'https://youtu.be/xFOB-ph8KdE?si=o-QeavmUlsxAXUT1',
   },
 ];
 
@@ -98,7 +98,7 @@ const yogaPoses = [
 const HomeScreen: React.FC<HomeScreenProps> = ({navigation, route}) => {
   const inputRef = useRef<TextInput>(null);
   const [userData, setUserData] = useState({
-    firstName: 'Abdul',
+    firstName: 'User',
     profilePic: '',
   });
 

@@ -188,13 +188,7 @@ export const CameraStream: React.FC<CameraScreenProps> = ({
           </Text>,
         );
       }
-      if (warrior2PoseFeedback.feet.message) {
-        feedbackElements.push(
-          <Text key="feet" style={styles.feedbackText}>
-            {warrior2PoseFeedback.feet.message}
-          </Text>,
-        );
-      }
+
       if (warrior2PoseFeedback.hips.message) {
         feedbackElements.push(
           <Text key="hips" style={styles.feedbackText}>
@@ -238,13 +232,7 @@ export const CameraStream: React.FC<CameraScreenProps> = ({
           </Text>,
         );
       }
-      if (trianglePoseFeedback.feet.message) {
-        feedbackElements.push(
-          <Text key="feet" style={styles.feedbackText}>
-            {trianglePoseFeedback.feet.message}
-          </Text>,
-        );
-      }
+
       if (trianglePoseFeedback.hips.message) {
         feedbackElements.push(
           <Text key="hips" style={styles.feedbackText}>
@@ -273,9 +261,8 @@ export const CameraStream: React.FC<CameraScreenProps> = ({
           </Text>,
         );
       }
-
-      return feedbackElements;
     }
+    return feedbackElements;
   };
 
   //Handles Ending the Session
@@ -362,7 +349,7 @@ export const CameraStream: React.FC<CameraScreenProps> = ({
     // Set the initial timer based on pose.name
     switch (pose.name) {
       case 'Tree Pose':
-        return 30; // 30 seconds for Tree Pose
+        return 10; // 30 seconds for Tree Pose
       case 'Chair Pose':
         return 30; // 45 seconds for Chair Pose
       case 'Warrior II':
